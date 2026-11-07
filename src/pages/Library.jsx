@@ -115,7 +115,7 @@ export default function Library() {
     !POP_ROCK_GENRES.includes(song.genre_style) && !OUTRAS_BIBLIOTECAS_GENRES.includes(song.genre_style)
   );
 
-  const isLoading = isSongsLoading && !isOffline && !!currentUser;
+  const isLoading = isSongsLoading && !isOffline;
 
   const { data: rhythms = [] } = useQuery({
     queryKey: ['rhythms'],

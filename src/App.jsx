@@ -36,6 +36,10 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 // Páginas do loop que só administradores devem acessar
 const ADMIN_ONLY_PAGES = new Set(["Backup", "Reports", "DataProtection"]);
 
+// Páginas abertas a visitantes sem login (somente leitura da biblioteca)
+const PUBLIC_PATHS = new Set(["/", "/library", "/librarypoprock", "/librarysambampb", "/libraryinstrumental"]);
+const isPublicPath = (pathname) => PUBLIC_PATHS.has((pathname || "/").replace(/\/+$/, "").toLowerCase() || "/");
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
   const location = useLocation();
@@ -58,8 +62,8 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
+    } else if (authError.type === 'auth_required' && !isPublicPath(location.pathname)) {
+      // Fora da biblioteca, visitante sem login vai para a tela de entrada
       navigateToLogin();
       return null;
     }

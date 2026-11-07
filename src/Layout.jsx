@@ -6,10 +6,10 @@ import { base44 } from "@/api/base44Client";
 
 const navigationItems = [
   { title: "Analisar Música", url: createPageUrl("Analyze"), icon: Upload },
-  { title: "Biblioteca Sertaneja", url: createPageUrl("Library"), icon: Guitar },
-  { title: "Biblioteca Pop/Rock", url: "/LibraryPopRock", icon: Zap },
-  { title: "Biblioteca Samba, MPB & Forró", url: "/LibrarySambaMPB", icon: Waves },
-  { title: "Biblioteca Instrumental", url: "/LibraryInstrumental", icon: FileText },
+  { title: "Biblioteca Sertaneja", url: createPageUrl("Library"), icon: Guitar, publicItem: true },
+  { title: "Biblioteca Pop/Rock", url: "/LibraryPopRock", icon: Zap, publicItem: true },
+  { title: "Biblioteca Samba, MPB & Forró", url: "/LibrarySambaMPB", icon: Waves, publicItem: true },
+  { title: "Biblioteca Instrumental", url: "/LibraryInstrumental", icon: FileText, publicItem: true },
   { title: "Repertórios", url: createPageUrl("Setlists"), icon: ListMusic },
   { title: "Metrônomo", url: createPageUrl("MetronomePage"), icon: Timer },
   { title: "Progressões", url: createPageUrl("Progressions"), icon: Waves },
@@ -49,9 +49,10 @@ export default function Layout({ children, currentPageName }) {
   const [open, setOpen] = React.useState(false);
   const [expandedGroups, setExpandedGroups] = React.useState({});
   const [currentUser, setCurrentUser] = React.useState(null);
+  const [checkedUser, setCheckedUser] = React.useState(false);
 
   React.useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
+    base44.auth.me().then(setCurrentUser).catch(() => {}).finally(() => setCheckedUser(true));
   }, []);
 
   const isAdmin = currentUser?.role === 'admin';
@@ -220,7 +221,7 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               )}
 
-              {navigationItems.filter(item => !item.adminOnly || isAdmin).map((item) => {
+              {navigationItems.filter(item => (!item.adminOnly || isAdmin) && (currentUser || !checkedUser || item.publicItem)).map((item) => {
                 if (item.isGroup) {
                   return (
                     <div key={item.title}>
@@ -290,6 +291,16 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Footer */}
           <div className="bg-amber-50 p-4 border-t border-[#D4C5B0]/50 flex-shrink-0">
+            {checkedUser && !currentUser ? (
+            <Link
+              to={`/login?next=${encodeURIComponent(location.pathname)}`}
+              onClick={handleNavClick}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-medium transition-all duration-200 shadow-md"
+            >
+              <User className="w-4 h-4" />
+              <span>Entrar</span>
+            </Link>
+            ) : (
             <button
               type="button"
               onClick={() => base44.auth.logout()}
@@ -298,6 +309,7 @@ export default function Layout({ children, currentPageName }) {
               <LogOut className="w-4 h-4" />
               <span>Sair do Sistema</span>
             </button>
+            )}
           </div>
         </div>
 
