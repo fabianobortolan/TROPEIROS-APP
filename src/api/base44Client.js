@@ -15,8 +15,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Valores PÚBLICOS do projeto Supabase (podem ir para o navegador; a segurança
 // fica nas regras de acesso do banco). Podem ser trocados por variáveis de ambiente.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xjeluakxtrvluzednjsf.supabase.co';
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_DKWrwvqtxT7DRbQEmHaEMg_k3kJjUww';
+export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://xjeluakxtrvluzednjsf.supabase.co';
+export const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_DKWrwvqtxT7DRbQEmHaEMg_k3kJjUww';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },

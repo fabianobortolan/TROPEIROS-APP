@@ -5,7 +5,7 @@
 //
 // InvokeLLM usa a API da Anthropic (Claude). A chave fica no cofre do projeto
 // (segredo ANTHROPIC_API_KEY) e nunca vai para o navegador.
-// Só usuários logados no app podem usar.
+// Só administradores do app podem usar (a IA gasta crédito da Anthropic).
 // =============================================================================
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -40,6 +40,17 @@ async function usuarioLogado(req: Request) {
   const { data, error } = await sb.auth.getUser(token);
   if (error || !data?.user) throw new Falha("Faça login para usar este recurso.", 401);
   return data.user;
+}
+
+// A IA gasta crédito da conta da Anthropic: só administradores podem usar.
+async function exigirAdmin(userId: string) {
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+    auth: { persistSession: false },
+  });
+  const { data } = await sb.from("profiles").select("role").eq("id", userId).maybeSingle();
+  if (data?.role !== "admin") {
+    throw new Falha("Os recursos de inteligência artificial estão disponíveis só para administradores.", 403);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -244,7 +255,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "Use POST" }, 405);
   try {
-    await usuarioLogado(req);
+    const user = await usuarioLogado(req);
+    await exigirAdmin(user.id);
     const { endpoint, params } = await req.json();
     switch (endpoint) {
       case "InvokeLLM":
