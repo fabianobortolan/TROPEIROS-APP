@@ -71,6 +71,9 @@ function ajustaEsquema(s: any): any {
   if (ehObjeto) {
     out.properties = out.properties ?? {};
     out.additionalProperties = false;
+    // Todos os campos obrigatórios: com campos opcionais a resposta fica muito lenta
+    // (ou é recusada a partir de 24 opcionais). A IA preenche vazio o que não souber.
+    out.required = Object.keys(out.properties);
   }
   if (out.items) out.items = ajustaEsquema(out.items);
   for (const k of ["anyOf", "allOf"]) if (out[k]) out[k] = ajustaEsquema(out[k]);
@@ -149,6 +152,10 @@ function extraiJson(texto: string) {
   throw new Falha("A IA não devolveu dados no formato esperado. Tente de novo.", 502);
 }
 
+// Sem raciocínio prévio nas respostas estruturadas (mais rápido e barato).
+// Só o modelo principal aceita essa opção; o rápido (Haiku) recusa.
+const semRaciocinioPrevio = (model: string) => (model === MODELO_PADRAO ? { thinking: { type: "between_tools" } } : {});
+
 const escolheModelo = (m?: string) => (m && /flash|haiku|mini|lite/i.test(m) ? MODELO_RAPIDO : MODELO_PADRAO);
 
 // ---------------------------------------------------------------------------
@@ -197,7 +204,7 @@ async function invokeLLM(p: any) {
   try {
     const r = await claude({
       model, max_tokens: MAX_TOKENS, system: sistema, messages: mensagens,
-      thinking: { type: "between_tools" },
+      ...semRaciocinioPrevio(model),
       output_config: { effort: "medium", format: { type: "json_schema", schema: esquema } },
     });
     if (r.stop_reason === "max_tokens") throw new Falha(`A resposta da IA ficou longa demais e foi cortada. Tente com um pedido menor. ${consumo(r)}`, 502);
@@ -210,7 +217,7 @@ async function invokeLLM(p: any) {
       model, max_tokens: MAX_TOKENS, system: sistema + " Responda SOMENTE com um objeto JSON válido, sem texto antes ou depois.",
       messages: [{ role: "user", content: [...arquivos, { type: "text", text:
         `${textoPedido}\n\nResponda SOMENTE com um objeto JSON que siga este esquema:\n${JSON.stringify(p.response_json_schema)}` }] }],
-      thinking: { type: "between_tools" },
+      ...semRaciocinioPrevio(model),
       output_config: { effort: "medium" },
     });
     if (r.stop_reason === "max_tokens") throw new Falha(`A resposta da IA ficou longa demais e foi cortada. Tente com um pedido menor. ${consumo(r)}`, 502);

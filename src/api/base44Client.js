@@ -526,9 +526,10 @@ export const base44 = {
   auth,
   integrations,
   functions: {
-    // Mesmo formato de retorno do SDK (axios): { data, status }
+    // As funções de servidor vindas do Base44 ficam reunidas na Edge Function
+    // "funcoes". Mesmo formato de retorno do SDK (axios): { data, status }
     async invoke(functionName, data) {
-      const result = await invokeFunction(functionName, data);
+      const result = await invokeFunction('funcoes', { funcao: functionName, dados: data ?? {} });
       return { data: result, status: 200 };
     },
   },
