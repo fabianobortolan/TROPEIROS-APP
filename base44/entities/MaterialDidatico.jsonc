@@ -1,0 +1,90 @@
+{
+  "name": "MaterialDidatico",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo do material"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do material"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "pdf",
+        "video",
+        "audio",
+        "link",
+        "imagem",
+        "outro"
+      ],
+      "default": "pdf"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL do arquivo ou link"
+    },
+    "turma_id": {
+      "type": "string",
+      "description": "ID da turma (vazio = dispon\u00edvel para todos)"
+    },
+    "turma_nome": {
+      "type": "string",
+      "description": "Nome da turma"
+    },
+    "professor_nome": {
+      "type": "string",
+      "description": "Nome do professor que compartilhou"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags para organiza\u00e7\u00e3o"
+    },
+    "destaque": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se deve aparecer em destaque"
+    }
+  },
+  "required": [
+    "titulo",
+    "tipo",
+    "file_url"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

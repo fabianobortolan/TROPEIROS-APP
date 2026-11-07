@@ -1,0 +1,133 @@
+{
+  "name": "ReferenceLibrary",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo do documento/livro/artigo"
+    },
+    "author": {
+      "type": "string",
+      "description": "Autor do documento"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "teoria_musical",
+        "harmonia",
+        "progressoes",
+        "musica_sertaneja",
+        "analise_musical",
+        "arranjo",
+        "composicao",
+        "historia_musical",
+        "tecnica_instrumental",
+        "outro"
+      ],
+      "default": "teoria_musical",
+      "description": "Categoria do conte\u00fado"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL do arquivo (PDF, DOC, DOCX, TXT)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do conte\u00fado do documento"
+    },
+    "extracted_content": {
+      "type": "string",
+      "description": "Conte\u00fado extra\u00eddo do documento via IA"
+    },
+    "key_concepts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Conceitos-chave extra\u00eddos do documento"
+    },
+    "progressions_mentioned": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Progress\u00f5es harm\u00f4nicas mencionadas no documento"
+    },
+    "indexed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o conte\u00fado j\u00e1 foi processado e indexado"
+    },
+    "processing_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "error"
+      ],
+      "default": "pending",
+      "description": "Status do processamento do documento"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags para organiza\u00e7\u00e3o e busca"
+    },
+    "publication_year": {
+      "type": "number",
+      "description": "Ano de publica\u00e7\u00e3o"
+    },
+    "language": {
+      "type": "string",
+      "default": "pt",
+      "description": "Idioma do documento"
+    },
+    "system_integrated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o conte\u00fado j\u00e1 foi integrado ao sistema (Progressions, LearningPattern)"
+    },
+    "integration_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da integra\u00e7\u00e3o com o sistema"
+    }
+  },
+  "required": [
+    "title",
+    "file_url",
+    "category"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

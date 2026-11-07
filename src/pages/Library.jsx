@@ -1,0 +1,836 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useOfflineSync } from "../components/utils/useOfflineSync";
+import OfflineBanner from "../components/utils/OfflineBanner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Music, Filter, Key, Award, TrendingUp, RefreshCw, FileText, BookMarked, Upload, ListMusic, CheckCircle2, Info, Sparkles, Globe, AlertTriangle, Target, Guitar } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { parseSoloTab } from "@/lib/soloTabUtils";
+
+import { getSongDifficulty } from "@/utils/chordDifficulty";
+import SongCardSkeleton from "../components/songs/SongCardSkeleton";
+import SongDetails from "../components/songs/SongDetails";
+import ApostilaPDF from "../components/songs/ApostilaPDF";
+import LibraryApostila from "../components/songs/LibraryApostila";
+import SongInfoModal from "../components/songs/SongInfoModal";
+import CompareAnalyses from "../components/analysis/CompareAnalyses";
+import SimilarityAnalysis from "../components/analysis/SimilarityAnalysis";
+
+
+import StageModeView from "../components/songs/StageModeView";
+import CadernosManager from "../components/cadernos/CadernosManager";
+import HarmonicSetlistAnalyzer from "../components/analysis/HarmonicSetlistAnalyzer";
+import EditChordsModal from "../components/songs/EditChordsModal";
+import EnriquecerDadosModal from "../components/songs/EnriquecerDadosModal";
+import BuscarCifraModal from "../components/songs/BuscarCifraModal";
+
+
+const genreColors = {
+  sertanejo_raiz: "bg-amber-100 text-amber-800 border-amber-200",
+  sertanejo_universitario: "bg-blue-100 text-blue-800 border-blue-200",
+  sertanejo_romantico: "bg-rose-100 text-rose-800 border-rose-200",
+  sertanejo_moderno: "bg-purple-100 text-purple-800 border-purple-200",
+  sertanejo_modao: "bg-orange-100 text-orange-800 border-orange-200",
+  outro: "bg-gray-100 text-gray-800 border-gray-200"
+};
+
+const genreLabels = {
+  sertanejo_raiz: "🌾 Raiz",
+  sertanejo_universitario: "🎓 Universitário",
+  sertanejo_romantico: "💕 Romântico",
+  sertanejo_moderno: "🎸 Moderno",
+  sertanejo_modao: "🪗 Modão",
+  outro: "🎵 Outro"
+};
+
+export default function Library() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTab = urlParams.get('tab') === 'cadernos' ? 'cadernos' : 'biblioteca';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [genreFilter, setGenreFilter] = useState("all");
+  const [rhythmFilter, setRhythmFilter] = useState("all");
+  const [progressionFilter, setProgressionFilter] = useState("all");
+  const [keyFilter, setKeyFilter] = useState("all");
+  const [chordCountFilter, setChordCountFilter] = useState("all");
+  const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [selectedSong, setSelectedSong] = useState(null);
+  const [songInitialTab, setSongInitialTab] = useState("cifra");
+  const [recalculating, setRecalculating] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const [showSimilarity, setShowSimilarity] = useState(false);
+  const [apostilaSong, setApostilaSong] = useState(null);
+  const [comparisonSongs, setComparisonSongs] = useState({ song1: null, song2: null });
+  const [stageSong, setStageSong] = useState(null);
+  const [showHarmonicAnalyzer, setShowHarmonicAnalyzer] = useState(false);
+  const [infoSong, setInfoSong] = useState(null);
+  const [editChordsSong, setEditChordsSong] = useState(null);
+  const [showEnriquecer, setShowEnriquecer] = useState(false);
+  const [showBuscarCifra, setShowBuscarCifra] = useState(false);
+  const [showLibraryApostila, setShowLibraryApostila] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Função para validar se pode deletar uma música
+  const canDeleteSong = (songCreatedBy) => {
+    return currentUser?.email === songCreatedBy;
+  };
+
+  const fetchSongs = useCallback(async () => {
+    return await base44.fetchAllSongs();
+  }, []);
+
+  const POP_ROCK_GENRES = ["pop", "rock", "pop_rock", "hard_rock", "metal", "punk", "blues_rock", "indie", "alternativo", "classico_rock", "pop_internacional"];
+  // Estilos que pertencem a outras bibliotecas (Samba & MPB / Instrumental)
+  const OUTRAS_BIBLIOTECAS_GENRES = ["mpb", "samba", "forro"];
+
+  const {
+    data: allSongs,
+    isOffline,
+    isSyncing,
+    isLoading: isSongsLoading,
+    reload: refetchSongs,
+  } = useOfflineSync("songs", fetchSongs);
+
+  // Filtra apenas músicas Sertanejas (exclui Pop/Rock, MPB, Samba e Forró — cada um tem biblioteca própria)
+  const songs = (allSongs || []).filter(song =>
+    !POP_ROCK_GENRES.includes(song.genre_style) && !OUTRAS_BIBLIOTECAS_GENRES.includes(song.genre_style)
+  );
+
+  const isLoading = isSongsLoading && !isOffline && !!currentUser;
+
+  const { data: rhythms = [] } = useQuery({
+    queryKey: ['rhythms'],
+    queryFn: () => base44.entities.Rhythm.list('name', 200),
+  });
+
+  const { data: progressions = [] } = useQuery({
+    queryKey: ['progressions-library'],
+    queryFn: () => base44.entities.Progression.list('name', 200),
+    staleTime: 0,
+  });
+
+  const recalculatePredominant = async () => {
+    if (!confirm("Recalcular progressão predominante de TODAS as músicas?\n\nIsso pode demorar alguns segundos.")) {
+      return;
+    }
+
+    setRecalculating(true);
+
+    try {
+      let updated = 0;
+
+      for (const song of songs) {
+        if (!song.progressions || song.progressions.length === 0) continue;
+
+        // Determinar progressão predominante
+        const sectionWeights = {
+          'refrão': 3,
+          'refrao': 3,
+          'chorus': 3,
+          'verso': 2,
+          'verse': 2,
+          'pré-refrão': 1.5,
+          'pre-refrão': 1.5,
+          'ponte': 1.5,
+          'bridge': 1.5,
+          'intro': 1,
+          'outro': 1,
+          'solo': 1
+        };
+
+        const progressionScores = {};
+
+        song.progressions.forEach((prog) => {
+          if (!prog.progression_name) return;
+
+          const section = (prog.section || '').toLowerCase();
+          let weight = 1;
+
+          for (const [key, value] of Object.entries(sectionWeights)) {
+            if (section.includes(key)) {
+              weight = value;
+              break;
+            }
+          }
+
+          if (!progressionScores[prog.progression_name]) {
+            progressionScores[prog.progression_name] = {
+              score: 0,
+              pattern: prog.pattern || ''
+            };
+          }
+
+          progressionScores[prog.progression_name].score += weight;
+        });
+
+        let predominant = null;
+        let maxScore = 0;
+
+        for (const [name, data] of Object.entries(progressionScores)) {
+          if (data.score > maxScore) {
+            maxScore = data.score;
+            predominant = { name, pattern: data.pattern };
+          }
+        }
+
+        if (predominant && predominant.name !== song.predominant_progression) {
+          await base44.entities.Song.update(song.id, {
+            predominant_progression: predominant.name,
+            predominant_progression_pattern: predominant.pattern
+          });
+          updated++;
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['songs'] });
+      refetchSongs();
+      alert(`✅ ${updated} músicas atualizadas com progressão predominante!`);
+
+    } catch (err) {
+      console.error("Erro ao recalcular:", err);
+      alert("❌ Erro ao recalcular. Tente novamente.");
+    } finally {
+      setRecalculating(false);
+    }
+  };
+
+  // Calcula a progressão predominante em tempo real a partir das progressões da música
+  // Garante alinhamento com o modal — não depende do campo salvo no banco
+  const getComputedPredominant = (song) => {
+    const progs = (song.progressions || []).filter(p => p.progression_name);
+    if (progs.length === 0) return song.predominant_progression || null;
+    const sectionWeights = {
+      'refrão': 3, 'refrao': 3, 'chorus': 3,
+      'verso': 2, 'verse': 2,
+      'pré-refrão': 1.5, 'pre-refrão': 1.5, 'ponte': 1.5, 'bridge': 1.5,
+      'intro': 1, 'outro': 1, 'solo': 1
+    };
+    const scores = {};
+    progs.forEach(prog => {
+      const section = (prog.section || '').toLowerCase();
+      let weight = 1;
+      for (const [key, value] of Object.entries(sectionWeights)) {
+        if (section.includes(key)) { weight = value; break; }
+      }
+      if (!scores[prog.progression_name]) scores[prog.progression_name] = 0;
+      scores[prog.progression_name] += weight;
+    });
+    let best = null, maxScore = 0;
+    for (const [name, score] of Object.entries(scores)) {
+      if (score > maxScore) { maxScore = score; best = name; }
+    }
+    return best || song.predominant_progression || null;
+  };
+
+  const getUniqueChordCount = (song) => {
+    if (!song.progressions || song.progressions.length === 0) return 0;
+    const allChords = new Set();
+    song.progressions.forEach(prog => {
+      (prog.chords || []).forEach(chord => allChords.add(chord.replace(/[0-9]/g, '').trim()));
+    });
+    return allChords.size;
+  };
+
+  const filteredSongs = songs.
+  filter((song) => {
+    const norm = (str) => (str || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const q = norm(searchQuery);
+    const matchesSearch = !q ||
+      norm(song.title).includes(q) ||
+      norm(song.artist).includes(q);
+
+    const matchesGenre = genreFilter === "all" || song.genre_style === genreFilter;
+    const selectedRhythmObj = rhythms.find(r => r.name === rhythmFilter);
+    const matchesRhythm = rhythmFilter === "all" ||
+      (song.rhythm_name && song.rhythm_name.trim().toLowerCase() === rhythmFilter.trim().toLowerCase()) ||
+      (song.rhythm_id && selectedRhythmObj && song.rhythm_id === selectedRhythmObj.id);
+    const matchesProgression = progressionFilter === "all" || (
+      (song.progressions && song.progressions.some((prog) =>
+        prog.progression_name && prog.progression_name.trim().toLowerCase() === progressionFilter.trim().toLowerCase()
+      )) ||
+      (song.predominant_progression && song.predominant_progression.trim().toLowerCase() === progressionFilter.trim().toLowerCase())
+    );
+    const matchesKey = keyFilter === "all" || song.main_key === keyFilter;
+    const chordCount = getUniqueChordCount(song);
+    const matchesChordCount = chordCountFilter === "all" ||
+      (chordCountFilter === "2" && chordCount === 2) ||
+      (chordCountFilter === "3" && chordCount === 3) ||
+      (chordCountFilter === "4" && chordCount === 4) ||
+      (chordCountFilter === "5+" && chordCount >= 5);
+    const songDifficulty = getSongDifficulty(song);
+    const matchesDifficulty = difficultyFilter === "all" ||
+      (songDifficulty && songDifficulty === difficultyFilter);
+
+    return matchesSearch && matchesGenre && matchesRhythm && matchesProgression && matchesKey && matchesChordCount && matchesDifficulty;
+  }).
+  sort((a, b) => {
+    const titleA = a.title?.toLowerCase() || '';
+    const titleB = b.title?.toLowerCase() || '';
+    return titleA.localeCompare(titleB, 'pt-BR');
+  });
+
+  const handleImportFromCaderno = (cifra) => {
+    // Redireciona para análise com dados pré-preenchidos
+    navigate(createPageUrl("Analyze"), {
+      state: {
+        prefilledData: {
+          title: cifra.titulo,
+          artist: cifra.artista,
+          main_key: cifra.tom,
+          cifra_text: cifra.cifra_completa
+        }
+      }
+    });
+  };
+
+  // Força reload ao voltar para Library
+  React.useEffect(() => {
+    const handleFocus = () => {
+      refetchSongs();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [refetchSongs]);
+
+  return (
+    <div className="bg-amber-50 p-4 min-h-screen md:p-8">
+      <div className="w-full">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 md:mb-8">
+
+          <div className="flex flex-col gap-2 md:gap-4 mb-4 md:mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <div className="flex items-center gap-2">
+                  <Guitar className="w-8 h-8 text-[#8B6F47]" />
+                  <h1 className="text-2xl md:text-4xl font-bold text-[#8B6F47]" style={{ letterSpacing: '0.5px' }}>
+                    Biblioteca Sertaneja
+                  </h1>
+                </div>
+                <Badge className="bg-gradient-to-r from-[#8B6F47] to-[#A68A64] text-white text-sm md:text-base px-3 py-1">
+                  {songs.length} {songs.length === 1 ? 'música' : 'músicas'}
+                </Badge>
+              </div>
+              <p className="text-xs md:text-base text-[#A68A64] hidden md:block">Análise individual por seção + progressão predominante</p>
+            </div>
+
+            <OfflineBanner isOffline={isOffline} isSyncing={isSyncing} pendingCount={0} />
+
+            <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+              {currentUser?.role === 'admin' && (
+                <Link to={createPageUrl("Analyze")} style={{ flex: 1 }}>
+                  <button style={{ width: '100%' }} className="h-10 text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 bg-gradient-to-r from-[#8B6F47] to-[#A68A64] hover:from-[#A68A64] hover:to-[#8B6F47] text-white shadow-md transition-all">
+                    <Upload className="w-4 h-4 flex-shrink-0" />
+                    <span>Adicionar Música</span>
+                  </button>
+                </Link>
+              )}
+
+              {currentUser?.role === 'admin' && (
+                <button
+                  onClick={recalculatePredominant}
+                  disabled={recalculating}
+                  style={{ flex: 1 }}
+                  className="h-10 text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white transition-all bg-white disabled:opacity-50">
+                  <TrendingUp className={`w-4 h-4 flex-shrink-0 ${recalculating ? 'animate-spin' : ''}`} />
+                  <span>Recalcular</span>
+                </button>
+              )}
+              {currentUser?.role === 'admin' && (
+                <button
+                  onClick={() => setShowEnriquecer(true)}
+                  style={{ flex: 1 }}
+                  className="h-10 text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 border border-purple-400 text-purple-600 hover:bg-purple-500 hover:text-white transition-all bg-white">
+                  <Sparkles className="w-4 h-4 flex-shrink-0" />
+                  <span>Enriquecer</span>
+                </button>
+              )}
+              <button
+                onClick={() => setShowHarmonicAnalyzer(true)}
+                style={{ flex: 1 }}
+                className="h-10 rounded-xl text-xs md:text-sm font-semibold transition-all bg-[#E8DCC4] text-[#A68A64] hover:text-[#8B6F47] flex items-center justify-center gap-1">
+                <ListMusic className="w-4 h-4" />
+                Compatibilidade
+              </button>
+              <button
+                onClick={() => setShowLibraryApostila(true)}
+                style={{ flex: 1 }}
+                className="h-10 rounded-xl text-xs md:text-sm font-semibold transition-all bg-gradient-to-r from-[#8B6F47] to-[#D4AF37] text-white shadow-md hover:opacity-90 flex items-center justify-center gap-1">
+                <BookMarked className="w-4 h-4 flex-shrink-0" />
+                Apostila
+              </button>
+              <button
+                onClick={() => setActiveTab('biblioteca')}
+                style={{ flex: 1 }}
+                className={`h-10 rounded-xl text-xs md:text-sm font-semibold transition-all ${activeTab === 'biblioteca' ? 'bg-[#8B6F47] text-white shadow' : 'bg-[#E8DCC4] text-[#A68A64] hover:text-[#8B6F47]'}`}>
+                Minhas Músicas
+              </button>
+              <button
+                onClick={() => setActiveTab('cadernos')}
+                style={{ flex: 1 }}
+                className={`h-10 rounded-xl text-xs md:text-sm font-semibold transition-all ${activeTab === 'cadernos' ? 'bg-[#8B6F47] text-white shadow' : 'bg-[#E8DCC4] text-[#A68A64] hover:text-[#8B6F47]'}`}>
+                Cadernos de Cifras
+              </button>
+            </div>
+
+
+          </div>
+        </motion.div>
+
+        {activeTab === 'cadernos' ? (
+          <CadernosManager onImportSong={handleImportFromCaderno} />
+        ) : (
+          <>
+
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white/60 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 mb-4 md:mb-8 border border-[#D4C5B0] shadow-lg">
+
+          <div className="flex flex-col gap-2 md:gap-4">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-[#A68A64]" />
+                <Input
+                    placeholder="Buscar título ou artista..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 md:pl-10 bg-white border-[#D4C5B0] focus:border-[#8B6F47] focus:ring-[#8B6F47] h-9 md:h-10 text-sm" />
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(f => !f)}
+                className={`h-9 md:h-10 px-3 border-[#D4C5B0] flex items-center gap-1.5 text-sm font-medium flex-shrink-0 ${
+                  showFilters || genreFilter !== 'all' || rhythmFilter !== 'all' || progressionFilter !== 'all' || keyFilter !== 'all' || chordCountFilter !== 'all' || difficultyFilter !== 'all'
+                    ? 'bg-[#8B6F47] text-white border-[#8B6F47]'
+                    : 'text-[#8B6F47] hover:bg-[#8B6F47] hover:text-white'
+                }`}>
+                <Filter className="w-4 h-4" />
+                Filtrar
+                {(genreFilter !== 'all' || rhythmFilter !== 'all' || progressionFilter !== 'all' || keyFilter !== 'all' || chordCountFilter !== 'all' || difficultyFilter !== 'all') && (
+                  <span className="bg-white text-[#8B6F47] text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {[genreFilter, rhythmFilter, progressionFilter, keyFilter, chordCountFilter, difficultyFilter].filter(f => f !== 'all').length}
+                  </span>
+                )}
+              </Button>
+            </div>
+
+            {showFilters && (
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={genreFilter} onValueChange={setGenreFilter}>
+                <SelectTrigger className="bg-white border-[#D4C5B0] h-9 text-xs md:text-sm">
+                  <Filter className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <SelectValue placeholder="Estilo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Estilos</SelectItem>
+                  <SelectItem value="sertanejo_raiz">Raiz</SelectItem>
+                  <SelectItem value="sertanejo_universitario">Universitário</SelectItem>
+                  <SelectItem value="sertanejo_romantico">Romântico</SelectItem>
+                  <SelectItem value="sertanejo_moderno">Moderno</SelectItem>
+                  <SelectItem value="sertanejo_modao">🪗 Modão</SelectItem>
+                  <SelectItem value="outro">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={rhythmFilter} onValueChange={setRhythmFilter}>
+                <SelectTrigger className="bg-white border-[#D4C5B0] h-9 text-xs md:text-sm">
+                  <Music className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <SelectValue placeholder="Ritmo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Ritmos</SelectItem>
+                  {(() => {
+                    // Ritmos do banco + ritmos únicos usados nas músicas (fallback)
+                    const fromDb = rhythms.map(r => r.name).filter(Boolean);
+                    const fromSongs = [...new Set(songs.map(s => s.rhythm_name).filter(Boolean))];
+                    const allNames = [...new Set([...fromDb, ...fromSongs])].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                    return allNames.map(name => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                    ));
+                  })()}
+                </SelectContent>
+              </Select>
+
+              <Select value={progressionFilter} onValueChange={setProgressionFilter}>
+                <SelectTrigger className="bg-white border-[#D4C5B0] h-9 text-xs md:text-sm">
+                  <TrendingUp className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <SelectValue placeholder="Progressão" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as Progressões</SelectItem>
+                  {progressions
+                    .map(p => p.name)
+                    .filter(Boolean)
+                    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+                    .map(name => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+
+              <Select value={keyFilter} onValueChange={setKeyFilter}>
+                <SelectTrigger className="bg-white border-[#D4C5B0] h-9 text-xs md:text-sm">
+                  <Key className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <SelectValue placeholder="Tonalidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as Tonalidades</SelectItem>
+                  {[...new Set(songs.map(s => s.main_key).filter(Boolean))]
+                    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+                    .map(k => (
+                      <SelectItem key={k} value={k}>{k}</SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+
+              <Select value={chordCountFilter} onValueChange={setChordCountFilter}>
+                <SelectTrigger className="bg-white border-[#D4C5B0] h-9 text-xs md:text-sm">
+                  <Award className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <SelectValue placeholder="Qtd. Acordes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Qualquer Qtd. de Acordes</SelectItem>
+                  <SelectItem value="2">2 acordes</SelectItem>
+                  <SelectItem value="3">3 acordes</SelectItem>
+                  <SelectItem value="4">4 acordes</SelectItem>
+                  <SelectItem value="5+">5 ou mais acordes</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                <SelectTrigger className="bg-white border-[#D4C5B0] h-9 text-xs md:text-sm">
+                  <Target className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                  <SelectValue placeholder="Dificuldade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Qualquer Dificuldade</SelectItem>
+                  <SelectItem value="facil">Fácil — só acordes abertos</SelectItem>
+                  <SelectItem value="medio">Médio — sétimas, pestanas</SelectItem>
+                  <SelectItem value="dificil">Difícil — 9as, dim, inversões</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            )}
+          </div>
+        </motion.div>
+
+        {isLoading ?
+          <div className="space-y-3">
+            {Array(6).fill(0).map((_, i) => <SongCardSkeleton key={i} />)}
+          </div> :
+          filteredSongs.length === 0 ?
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16">
+
+            <div className="w-24 h-24 bg-[#9CAF88]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Music className="w-12 h-12 text-[#9CAF88]" />
+            </div>
+            <h3 className="text-xl font-bold text-[#8B6F47] mb-2">Nenhuma música encontrada</h3>
+            <p className="text-[#A68A64] mb-6">
+              {searchQuery || genreFilter !== "all" || rhythmFilter !== "all" || progressionFilter !== "all" ?
+              "Tente ajustar seus filtros de busca" :
+              "Comece adicionando sua primeira música"}
+            </p>
+            <Link to={createPageUrl("Analyze")}>
+              <Button className="bg-gradient-to-r from-[#8B6F47] to-[#A68A64] hover:from-[#A68A64] hover:to-[#8B6F47] text-white shadow-lg">
+                <Music className="w-4 h-4 mr-2" />
+                Analisar Primeira Música
+              </Button>
+            </Link>
+          </motion.div> :
+
+          <div className="space-y-2">
+            {filteredSongs.map((song, index) => {
+              const totalSections = song.progressions?.length || 0;
+
+              return (
+                <motion.div
+                  key={song.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.03 }}>
+
+                  <Card
+                    className="cursor-pointer hover:shadow-xl transition-all duration-300 border-[#D4C5B0] bg-white/80 backdrop-blur-sm overflow-hidden group relative"
+                    onClick={() => setSelectedSong(song)}>
+
+                    {/* Corda decorativa topo */}
+                    <div className="absolute top-0 left-0 right-0 h-[10px] z-10 pointer-events-none"
+                      style={{
+                        backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/bfcd67933_image.png')`,
+                        backgroundRepeat: 'repeat-x',
+                        backgroundSize: 'auto 10px',
+                      }}
+                    />
+                    {/* Corda decorativa base */}
+                    <div className="absolute bottom-0 left-0 right-0 h-[10px] z-10 pointer-events-none"
+                      style={{
+                        backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/bfcd67933_image.png')`,
+                        backgroundRepeat: 'repeat-x',
+                        backgroundSize: 'auto 10px',
+                      }}
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#8B6F47]/5 to-[#9CAF88]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <CardContent className="p-3 pt-4 pb-3 relative">
+                      <div className="flex flex-col gap-1.5">
+                        {/* Linha do título com Tom no canto superior esquerdo */}
+                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setSelectedSong(song)}>
+                          <div
+                            className="w-8 h-8 bg-gradient-to-br from-[#D4AF37] to-[#9CAF88] rounded-lg flex items-center justify-center shadow flex-shrink-0 cursor-pointer hover:scale-110 transition-transform"
+                            onClick={(e) => { e.stopPropagation(); setStageSong(song); }}
+                            title="🎸 Modo de Palco">
+                            <Music className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-base text-[#8B6F47] uppercase flex items-center gap-1.5" style={{ letterSpacing: '0.5px' }}>
+                              {song.is_fully_revised && (
+                                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" title="Música totalmente revisada" />
+                              )}
+                              {song.validation_severity && song.validation_severity !== 'ok' && (() => {
+                                const sev = song.validation_severity;
+                                const color = sev === 'critico' ? 'text-red-600' : sev === 'suspeito' ? 'text-orange-500' : 'text-amber-500';
+                                const bg = sev === 'critico' ? 'bg-red-100 text-red-700' : sev === 'suspeito' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700';
+                                const label = sev === 'critico' ? 'Cifra crítica' : sev === 'suspeito' ? 'Cifra suspeita' : 'Atenção na cifra';
+                                return (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setInfoSong(song); }}
+                                    className={`flex items-center gap-0.5 ${color} flex-shrink-0 hover:scale-110 transition-transform`}
+                                    title={`${label} — clique para ver os alertas`}
+                                  >
+                                    <AlertTriangle className="w-4 h-4" />
+                                    {(song.validation_issues || []).length > 0 && (
+                                      <span className={`text-[9px] font-bold rounded-full px-1 leading-tight ${bg}`}>
+                                        {(song.validation_issues || []).length}
+                                      </span>
+                                    )}
+                                  </button>
+                                );
+                              })()}
+                              <span className="truncate">{song.title}</span>
+                            </h3>
+                            <p className="text-sm text-[#A68A64] truncate">{song.artist}</p>
+                          </div>
+                          {/* Tom - canto superior direito */}
+                          <div
+                            className="flex-shrink-0 flex flex-col items-center justify-center px-2 py-0.5 bg-[#9CAF88]/10 rounded-lg border border-[#9CAF88]/30 text-center min-w-[40px]"
+                            onClick={(e) => { e.stopPropagation(); setSelectedSong(song); }}>
+                            <p className="text-[9px] text-[#A68A64] leading-none">Tom</p>
+                            <p className="text-xs font-bold text-[#8B6F47] flex items-center gap-0.5">
+                              {song.main_key || "N/A"}
+                              {song.progressions?.some((p) => p.modulated_key) &&
+                                <RefreshCw className="w-2 h-2 text-orange-500" />
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* 6 botões em linha: Prog, Ritmo, Acordes, Info, Apostila, Tocar */}
+                        <div className="grid grid-cols-6 gap-1">
+                          {/* Progressão - calculada em tempo real das progressões reais */}
+                          {(() => {
+                            const prog = getComputedPredominant(song);
+                            return (
+                              <div
+                                className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center cursor-pointer ${prog ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#9CAF88]/20 border border-[#D4AF37]/50" : "bg-gray-100 border border-gray-300"}`}
+                                onClick={() => setSelectedSong(song)}>
+                                <p className={`text-[9px] leading-none ${prog ? "text-[#A68A64]" : "text-gray-500"}`}>Prog.</p>
+                                <p className={`text-[10px] font-bold truncate w-full text-center ${prog ? "text-[#8B6F47]" : "text-gray-500"}`}>
+                                  {prog || "N/A"}
+                                </p>
+                              </div>
+                            );
+                          })()}
+
+                          {/* Ritmo */}
+                          <div
+                            className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center cursor-pointer ${song.rhythm_name ? "bg-gradient-to-r from-[#8B6F47] to-[#A68A64] border border-[#8B6F47] shadow" : "bg-gray-100 border border-gray-300"}`}
+                            onClick={() => setSelectedSong(song)}>
+                            <p className={`text-[9px] leading-none ${song.rhythm_name ? "text-white/90" : "text-gray-500"}`}>Ritmo</p>
+                            <p className={`text-[10px] font-bold truncate w-full text-center ${song.rhythm_name ? "text-white" : "text-gray-500"}`}>
+                              {song.rhythm_name || "N/A"}
+                            </p>
+                          </div>
+
+                          {/* Acordes */}
+                          {(() => {
+                            // Coleta acordes reais de todas as progressões da música
+                            const allChords = [];
+                            const seen = new Set();
+                            (song.progressions || []).forEach(prog => {
+                              (Array.isArray(prog.chords) ? prog.chords : []).forEach(c => {
+                                if (c && !seen.has(c)) { seen.add(c); allChords.push(c); }
+                              });
+                            });
+                            const hasChords = allChords.length > 0;
+                            const display = hasChords ? allChords.slice(0, 4).join('-') : "N/A";
+                            return (
+                              <div
+                                className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${hasChords ? "bg-[#9CAF88]/10 border border-[#9CAF88]/30" : "bg-gray-100 border border-gray-300"}`}
+                                title="Clique para editar acordes"
+                                onClick={(e) => { e.stopPropagation(); setEditChordsSong(song); }}>
+                                <p className={`text-[9px] leading-none ${hasChords ? "text-[#A68A64]" : "text-gray-500"}`}>Acordes ✏️</p>
+                                <p className={`text-[10px] font-bold truncate w-full text-center ${hasChords ? "text-[#8B6F47]" : "text-gray-500"}`}>
+                                  {display}
+                                </p>
+                              </div>
+                            );
+                          })()}
+
+                          {/* Info */}
+                          <div
+                            className="flex flex-col items-center justify-center px-1 py-0.5 bg-green-50 rounded-lg border border-green-400 text-center cursor-pointer hover:bg-green-500 transition-colors group/info"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setInfoSong(song); }}>
+                            <p className="text-[9px] leading-none text-green-600 group-hover/info:text-white">Info</p>
+                            <p className="text-[10px] font-bold text-green-700 group-hover/info:text-white">ℹ️</p>
+                          </div>
+
+                          {/* Apostila */}
+                          <div
+                            className="flex flex-col items-center justify-center px-1 py-0.5 bg-amber-50 rounded-lg border border-orange-400 text-center cursor-pointer hover:bg-orange-500 transition-colors group/ap"
+                            onClick={(e) => { e.stopPropagation(); setApostilaSong(song); }}>
+                            <p className="text-[9px] leading-none text-orange-600 group-hover/ap:text-white">Apostila</p>
+                            <p className="text-[10px] font-bold text-orange-700 group-hover/ap:text-white">📄</p>
+                          </div>
+
+                          {/* Tocar junto */}
+                          {(() => {
+                            const hasSoloTab = !!parseSoloTab(song.solo_tab);
+                            return (
+                              <div
+                                className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center transition-colors group/tj ${hasSoloTab ? "bg-indigo-50 border border-indigo-400 hover:bg-indigo-500 cursor-pointer" : "bg-gray-100 border border-gray-300 cursor-not-allowed"}`}
+                                title={hasSoloTab ? "🎸 Tocar junto — abre a tablatura do solo" : "Esta música ainda não possui tablatura de solo"}
+                                onClick={(e) => { e.stopPropagation(); if (hasSoloTab) { setSongInitialTab("tocarjunto"); setSelectedSong(song); } }}>
+                                <p className={`text-[9px] leading-none ${hasSoloTab ? "text-indigo-600 group-hover/tj:text-white" : "text-gray-500"}`}>Tocar</p>
+                                <p className={`text-[10px] font-bold ${hasSoloTab ? "text-indigo-700 group-hover/tj:text-white" : "text-gray-500"}`}>🎸</p>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>);
+
+            })}
+          </div>
+          }
+
+        {selectedSong &&
+          <SongDetails
+            song={selectedSong}
+            initialTab={songInitialTab}
+            onClose={() => {
+              setSelectedSong(null);
+              setSongInitialTab("cifra");
+              queryClient.invalidateQueries({ queryKey: ['songs'] });
+              refetchSongs();
+            }} />
+
+          }
+
+        {showComparison &&
+          <CompareAnalyses
+            onClose={() => {
+              setShowComparison(false);
+              setComparisonSongs({ song1: null, song2: null });
+            }}
+            initialSong1={comparisonSongs.song1}
+            initialSong2={comparisonSongs.song2} />
+
+          }
+
+        {showSimilarity &&
+          <SimilarityAnalysis
+            onClose={() => setShowSimilarity(false)}
+            onSelectSongs={(song1, song2) => {
+              setComparisonSongs({ song1: song1.id, song2: song2.id });
+              setShowComparison(true);
+            }} />
+
+          }
+
+        {stageSong &&
+          <StageModeView
+            song={stageSong}
+            onClose={() => setStageSong(null)} />
+          }
+
+        {apostilaSong &&
+          <ApostilaPDF
+            song={apostilaSong}
+            onClose={() => setApostilaSong(null)} />
+          }
+
+        {showHarmonicAnalyzer &&
+          <HarmonicSetlistAnalyzer
+            songs={songs}
+            onClose={() => setShowHarmonicAnalyzer(false)} />
+          }
+
+        <SongInfoModal song={infoSong} open={!!infoSong} onClose={() => setInfoSong(null)} />
+
+        {editChordsSong && (
+          <EditChordsModal
+            song={editChordsSong}
+            onClose={() => setEditChordsSong(null)}
+            onSaved={() => { setEditChordsSong(null); queryClient.invalidateQueries({ queryKey: ['songs'] }); refetchSongs(); }}
+          />
+        )}
+
+        {showEnriquecer && (
+          <EnriquecerDadosModal
+            onClose={() => setShowEnriquecer(false)}
+            onDone={() => { refetchSongs(); queryClient.invalidateQueries({ queryKey: ['songs'] }); }}
+          />
+        )}
+
+        {showBuscarCifra && (
+          <BuscarCifraModal
+            onClose={() => setShowBuscarCifra(false)}
+            onSave={() => { setShowBuscarCifra(false); refetchSongs(); queryClient.invalidateQueries({ queryKey: ['songs'] }); }}
+          />
+        )}
+
+        </>
+        )}
+
+        {/* Modal da apostila fora do ternary de loading: um recarregamento
+            de dados (ex: oscilação de rede) não pode fechar a edição */}
+        {showLibraryApostila && (
+          <LibraryApostila onClose={() => setShowLibraryApostila(false)} />
+        )}
+
+      </div>
+    </div>);
+
+}

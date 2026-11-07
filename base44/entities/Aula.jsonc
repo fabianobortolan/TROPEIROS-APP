@@ -1,0 +1,182 @@
+{
+  "name": "Aula",
+  "type": "object",
+  "properties": {
+    "numero": {
+      "type": "number",
+      "description": "N\u00famero da aula na sequ\u00eancia"
+    },
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo da aula"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o geral do que ser\u00e1 ensinado"
+    },
+    "nivel": {
+      "type": "string",
+      "enum": [
+        "iniciante",
+        "basico",
+        "intermediario",
+        "avancado"
+      ],
+      "default": "iniciante",
+      "description": "N\u00edvel de dificuldade da aula"
+    },
+    "duracao_minutos": {
+      "type": "number",
+      "description": "Dura\u00e7\u00e3o estimada da aula em minutos"
+    },
+    "teoria": {
+      "type": "object",
+      "description": "Conte\u00fado te\u00f3rico da aula",
+      "properties": {
+        "topicos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "titulo": {
+                "type": "string"
+              },
+              "conteudo": {
+                "type": "string"
+              },
+              "exemplos": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "conceitos_chave": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "exercicios": {
+      "type": "array",
+      "description": "Exerc\u00edcios pr\u00e1ticos da aula",
+      "items": {
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "instrucoes": {
+            "type": "string"
+          },
+          "dificuldade": {
+            "type": "string",
+            "enum": [
+              "facil",
+              "medio",
+              "dificil"
+            ]
+          },
+          "tempo_pratica": {
+            "type": "number",
+            "description": "Tempo sugerido de pr\u00e1tica em minutos"
+          },
+          "dicas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "musicas_exemplo": {
+      "type": "array",
+      "description": "IDs de m\u00fasicas que exemplificam o conte\u00fado",
+      "items": {
+        "type": "string"
+      }
+    },
+    "material_ids": {
+      "type": "array",
+      "description": "IDs dos materiais did\u00e1ticos vinculados a esta aula",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prerequisitos": {
+      "type": "array",
+      "description": "N\u00fameros das aulas que devem ser conclu\u00eddas antes",
+      "items": {
+        "type": "number"
+      }
+    },
+    "objetivos": {
+      "type": "array",
+      "description": "O que o aluno deve saber ao final",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recursos_adicionais": {
+      "type": "array",
+      "description": "Links, v\u00eddeos, PDFs complementares",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "video",
+              "pdf",
+              "audio",
+              "link"
+            ]
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "publicada",
+        "arquivada"
+      ],
+      "default": "rascunho"
+    }
+  },
+  "required": [
+    "numero",
+    "titulo",
+    "nivel"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

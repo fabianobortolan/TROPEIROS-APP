@@ -1,0 +1,84 @@
+{
+  "name": "Pagamento",
+  "type": "object",
+  "properties": {
+    "aluno_id": {
+      "type": "string",
+      "description": "ID do aluno"
+    },
+    "aluno_nome": {
+      "type": "string",
+      "description": "Nome do aluno"
+    },
+    "mes_referencia": {
+      "type": "string",
+      "description": "M\u00eas de refer\u00eancia (YYYY-MM)"
+    },
+    "valor": {
+      "type": "number",
+      "description": "Valor em reais"
+    },
+    "data_vencimento": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de vencimento"
+    },
+    "data_pagamento": {
+      "type": "string",
+      "format": "date",
+      "description": "Data efetiva de pagamento"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "pago",
+        "atrasado",
+        "cancelado"
+      ],
+      "default": "pendente"
+    },
+    "forma_pagamento": {
+      "type": "string",
+      "enum": [
+        "dinheiro",
+        "pix",
+        "cartao_debito",
+        "cartao_credito",
+        "transferencia"
+      ],
+      "description": "Forma de pagamento"
+    },
+    "observacoes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es"
+    }
+  },
+  "required": [
+    "aluno_nome",
+    "mes_referencia",
+    "valor"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

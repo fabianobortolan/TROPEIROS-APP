@@ -1,0 +1,82 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "favorite_chords": {
+      "type": "array",
+      "description": "Acordes favoritos do usu\u00e1rio com instrumento e ID espec\u00edfico",
+      "items": {
+        "type": "object",
+        "properties": {
+          "chord_name": {
+            "type": "string",
+            "description": "Nome do acorde (ex: C, Am, G7)"
+          },
+          "chord_id": {
+            "type": "string",
+            "description": "ID do acorde favorito no banco"
+          },
+          "instrument": {
+            "type": "string",
+            "description": "Instrumento (violao ou viola)"
+          }
+        }
+      }
+    },
+    "study_goals": {
+      "type": "array",
+      "description": "Metas de estudo semanais do usu\u00e1rio",
+      "items": {
+        "type": "object",
+        "properties": {
+          "goal": {
+            "type": "string",
+            "description": "Descri\u00e7\u00e3o da meta"
+          },
+          "target": {
+            "type": "number",
+            "description": "Valor alvo (ex: 5 m\u00fasicas, 3 guias)"
+          },
+          "current": {
+            "type": "number",
+            "description": "Progresso atual",
+            "default": 0
+          },
+          "type": {
+            "type": "string",
+            "description": "Tipo de meta (songs, guides, exercises, practice_hours)"
+          },
+          "week_start": {
+            "type": "string",
+            "format": "date",
+            "description": "In\u00edcio da semana da meta"
+          }
+        }
+      }
+    },
+    "song_history": {
+      "type": "array",
+      "description": "Hist\u00f3rico de m\u00fasicas visualizadas/estudadas",
+      "items": {
+        "type": "object",
+        "properties": {
+          "song_id": {
+            "type": "string"
+          },
+          "song_title": {
+            "type": "string"
+          },
+          "viewed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "favorite_chords",
+    "study_goals",
+    "song_history"
+  ]
+}

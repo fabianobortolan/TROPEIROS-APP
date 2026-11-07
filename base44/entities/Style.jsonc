@@ -1,0 +1,86 @@
+{
+  "name": "Style",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome do estilo musical (ex: Sertanejo Raiz, Sertanejo Universit\u00e1rio)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o detalhada do estilo"
+    },
+    "characteristics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Caracter\u00edsticas musicais do estilo"
+    },
+    "typical_instruments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Instrumentos t\u00edpicos deste estilo"
+    },
+    "typical_rhythms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ritmos comumente usados neste estilo"
+    },
+    "origin": {
+      "type": "string",
+      "description": "Origem geogr\u00e1fica ou hist\u00f3rica do estilo"
+    },
+    "period": {
+      "type": "string",
+      "description": "Per\u00edodo/\u00e9poca de maior popularidade"
+    },
+    "representative_artists": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Artistas representativos do estilo"
+    },
+    "example_songs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "M\u00fasicas exemplo deste estilo"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Nome do \u00edcone ou emoji representativo"
+    },
+    "color": {
+      "type": "string",
+      "description": "Cor associada ao estilo (hex)"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

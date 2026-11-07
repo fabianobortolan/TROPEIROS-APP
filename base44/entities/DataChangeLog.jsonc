@@ -1,0 +1,107 @@
+{
+  "name": "DataChangeLog",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "description": "Tipo de entidade alterada (Song, Setlist, etc)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID da entidade alterada"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update",
+        "delete",
+        "restore"
+      ],
+      "description": "Tipo de a\u00e7\u00e3o realizada"
+    },
+    "changed_by": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que fez a altera\u00e7\u00e3o"
+    },
+    "change_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Quando a altera\u00e7\u00e3o ocorreu"
+    },
+    "old_data": {
+      "type": "object",
+      "description": "Dados anteriores (para updates e deletes)"
+    },
+    "new_data": {
+      "type": "object",
+      "description": "Dados novos (para creates e updates)"
+    },
+    "changes_summary": {
+      "type": "array",
+      "description": "Resumo das mudan\u00e7as espec\u00edficas",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "old_value": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
+          "new_value": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP de origem da requisi\u00e7\u00e3o"
+    },
+    "is_critical": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se foi uma altera\u00e7\u00e3o cr\u00edtica"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "action",
+    "changed_by",
+    "change_timestamp"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

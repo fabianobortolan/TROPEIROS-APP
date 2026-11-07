@@ -1,0 +1,70 @@
+{
+  "name": "Rhythm",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome do ritmo (ex: Guar\u00e2nia, Vanera, Rancheira)"
+    },
+    "pattern": {
+      "type": "string",
+      "description": "Padr\u00e3o r\u00edtmico ou nota\u00e7\u00e3o"
+    },
+    "sound": {
+      "type": "string",
+      "description": "Som do ritmo (ex: tum-t\u00e1-tum-t\u00e1, p\u00e1-p\u00e1-pum-p\u00e1)"
+    },
+    "diagram_pattern": {
+      "type": "string",
+      "description": "Padr\u00e3o customizado do diagrama de batida (ex: B A B A ou \u2193 \u2191 \u2193 \u2191). Use B=baixo, A=alto, X=abafado, L=leque"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do ritmo e suas caracter\u00edsticas"
+    },
+    "time_signature": {
+      "type": "string",
+      "description": "F\u00f3rmula de compasso (ex: 4/4, 3/4, 2/4)"
+    },
+    "audio_url": {
+      "type": "string",
+      "description": "URL do arquivo de \u00e1udio do ritmo"
+    },
+    "backing_track_url": {
+      "type": "string",
+      "description": "URL do arquivo de \u00e1udio da backing track (base r\u00edtmica para estudo)"
+    },
+    "backing_track_bpm": {
+      "type": "number",
+      "description": "BPM padr\u00e3o da backing track"
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Exemplos de m\u00fasicas que usam esse ritmo"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

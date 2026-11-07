@@ -1,0 +1,113 @@
+{
+  "name": "Progression",
+  "properties": {
+    "alias_de": {
+      "description": "Se preenchido, esta entrada \u00e9 a mesma progress\u00e3o de outra (rota\u00e7\u00e3o) e o motor usa a principal",
+      "type": "string"
+    },
+    "backing_track_url": {
+      "description": "URL do arquivo de \u00e1udio MP3 da backing track desta progress\u00e3o",
+      "type": "string"
+    },
+    "common_keys": {
+      "description": "Tonalidades comuns onde essa progress\u00e3o aparece",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "description": {
+      "description": "Descri\u00e7\u00e3o da progress\u00e3o e suas caracter\u00edsticas",
+      "type": "string"
+    },
+    "examples": {
+      "description": "Exemplos de m\u00fasicas que usam essa progress\u00e3o",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "genre_tags": {
+      "description": "Tags de g\u00eanero onde \u00e9 comum (ex: sertanejo, forr\u00f3, pop)",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "modo": {
+      "description": "Modo do tom em que a progress\u00e3o \u00e9 procurada",
+      "enum": [
+        "maior",
+        "menor",
+        "ambos"
+      ],
+      "type": "string"
+    },
+    "name": {
+      "description": "Nome da progress\u00e3o (ex: Progress\u00e3o Terra)",
+      "type": "string"
+    },
+    "pattern": {
+      "description": "Padr\u00e3o principal em algarismos romanos (ex: I-IV-V-I)",
+      "type": "string"
+    },
+    "tipo": {
+      "description": "Como o motor reconhece: vocabulario = pelos graus usados (TERRA/CH\u00c3O/RAIZ); ciclo = ordem obrigat\u00f3ria, qualquer rota\u00e7\u00e3o vale ('partindo do X'); linear = ordem fixa sem rota\u00e7\u00e3o; linha = ca\u00edda/subida detectada automaticamente",
+      "enum": [
+        "vocabulario",
+        "ciclo",
+        "linear",
+        "linha"
+      ],
+      "type": "string"
+    },
+    "variations": {
+      "description": "Varia\u00e7\u00f5es desta progress\u00e3o",
+      "items": {
+        "properties": {
+          "backing_track_url": {
+            "description": "URL do arquivo de \u00e1udio MP3 da backing track desta varia\u00e7\u00e3o",
+            "type": "string"
+          },
+          "description": {
+            "description": "Descri\u00e7\u00e3o da varia\u00e7\u00e3o",
+            "type": "string"
+          },
+          "name": {
+            "description": "Nome da varia\u00e7\u00e3o (opcional)",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "Padr\u00e3o da varia\u00e7\u00e3o em algarismos romanos",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "pattern"
+  ],
+  "type": "object",
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

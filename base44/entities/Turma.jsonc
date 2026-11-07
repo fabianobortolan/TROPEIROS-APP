@@ -1,0 +1,91 @@
+{
+  "name": "Turma",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome da turma"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o da turma"
+    },
+    "nivel": {
+      "type": "string",
+      "enum": [
+        "iniciante",
+        "basico",
+        "intermediario",
+        "avancado"
+      ],
+      "default": "iniciante"
+    },
+    "professor_nome": {
+      "type": "string",
+      "description": "Nome do professor respons\u00e1vel"
+    },
+    "horario": {
+      "type": "string",
+      "description": "Hor\u00e1rio das aulas (ex: Ter\u00e7as e Quintas 19h)"
+    },
+    "dia_semana": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "segunda",
+          "terca",
+          "quarta",
+          "quinta",
+          "sexta",
+          "sabado",
+          "domingo"
+        ]
+      },
+      "description": "Dias da semana"
+    },
+    "hora_inicio": {
+      "type": "string",
+      "description": "Hora de in\u00edcio (HH:MM)"
+    },
+    "hora_fim": {
+      "type": "string",
+      "description": "Hora de t\u00e9rmino (HH:MM)"
+    },
+    "max_alunos": {
+      "type": "number",
+      "description": "N\u00famero m\u00e1ximo de alunos",
+      "default": 10
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativa",
+        "encerrada",
+        "pausada"
+      ],
+      "default": "ativa"
+    }
+  },
+  "required": [
+    "nome"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

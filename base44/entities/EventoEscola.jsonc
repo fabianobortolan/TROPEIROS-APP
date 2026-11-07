@@ -1,0 +1,88 @@
+{
+  "name": "EventoEscola",
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string",
+      "description": "T\u00edtulo do evento"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do evento"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "aula",
+        "recital",
+        "workshop",
+        "avaliacao",
+        "reuniao",
+        "outro"
+      ],
+      "default": "aula"
+    },
+    "data_inicio": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora de in\u00edcio"
+    },
+    "data_fim": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora de t\u00e9rmino"
+    },
+    "local": {
+      "type": "string",
+      "description": "Local do evento"
+    },
+    "turma_id": {
+      "type": "string",
+      "description": "ID da turma (opcional)"
+    },
+    "turma_nome": {
+      "type": "string",
+      "description": "Nome da turma"
+    },
+    "professor_nome": {
+      "type": "string",
+      "description": "Professor respons\u00e1vel"
+    },
+    "cor": {
+      "type": "string",
+      "description": "Cor para o calend\u00e1rio (hex)",
+      "default": "#8B6F47"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "agendado",
+        "realizado",
+        "cancelado"
+      ],
+      "default": "agendado"
+    }
+  },
+  "required": [
+    "titulo",
+    "data_inicio"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

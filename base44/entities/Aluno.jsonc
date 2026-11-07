@@ -1,0 +1,111 @@
+{
+  "name": "Aluno",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome completo do aluno"
+    },
+    "email": {
+      "type": "string",
+      "description": "E-mail do aluno"
+    },
+    "telefone": {
+      "type": "string",
+      "description": "Telefone de contato"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "N\u00famero de WhatsApp (com DDD)"
+    },
+    "data_nascimento": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de nascimento"
+    },
+    "responsavel": {
+      "type": "string",
+      "description": "Nome do respons\u00e1vel (para menores)"
+    },
+    "telefone_responsavel": {
+      "type": "string",
+      "description": "Telefone do respons\u00e1vel"
+    },
+    "instrumento": {
+      "type": "string",
+      "description": "Instrumento principal"
+    },
+    "nivel": {
+      "type": "string",
+      "enum": [
+        "iniciante",
+        "basico",
+        "intermediario",
+        "avancado"
+      ],
+      "default": "iniciante"
+    },
+    "turma_id": {
+      "type": "string",
+      "description": "ID da turma"
+    },
+    "turma_nome": {
+      "type": "string",
+      "description": "Nome da turma"
+    },
+    "data_matricula": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de matr\u00edcula"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "inativo",
+        "trancado"
+      ],
+      "default": "ativo"
+    },
+    "observacoes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es gerais"
+    },
+    "foto_url": {
+      "type": "string",
+      "description": "URL da foto do aluno"
+    }
+  },
+  "required": [
+    "nome"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.email": "{{user.email}}"
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

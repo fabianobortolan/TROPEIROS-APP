@@ -1,0 +1,108 @@
+{
+  "name": "LearningPattern",
+  "type": "object",
+  "properties": {
+    "chords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sequ\u00eancia de acordes identificada"
+    },
+    "key": {
+      "type": "string",
+      "description": "Tonalidade da progress\u00e3o"
+    },
+    "pattern": {
+      "type": "string",
+      "description": "Pattern em algarismos romanos (I-IV-V-I)"
+    },
+    "progression_name": {
+      "type": "string",
+      "description": "Nome da progress\u00e3o identificada"
+    },
+    "variation_name": {
+      "type": "string",
+      "description": "Nome ou descri\u00e7\u00e3o da varia\u00e7\u00e3o espec\u00edfica"
+    },
+    "section_type": {
+      "type": "string",
+      "description": "Tipo de se\u00e7\u00e3o (verso, refr\u00e3o, intro, etc.)"
+    },
+    "observations": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es e orienta\u00e7\u00f5es dadas pelo usu\u00e1rio para treinar o sistema"
+    },
+    "extracted_rules": {
+      "type": "array",
+      "description": "Regras extra\u00eddas automaticamente das observa\u00e7\u00f5es",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Tipo de regra (section_preference, style_hint, modulation_hint, frequency_high, frequency_low)"
+          },
+          "value": {
+            "type": "string",
+            "description": "Valor da regra"
+          },
+          "context": {
+            "type": "string",
+            "description": "Contexto original da observa\u00e7\u00e3o"
+          }
+        }
+      }
+    },
+    "times_seen": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantas vezes este padr\u00e3o foi identificado"
+    },
+    "times_corrected": {
+      "type": "number",
+      "default": 0,
+      "description": "Quantas vezes foi corrigido manualmente"
+    },
+    "confidence": {
+      "type": "number",
+      "default": 100,
+      "description": "N\u00edvel de confian\u00e7a (0-100) baseado em corre\u00e7\u00f5es"
+    },
+    "source_songs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs das m\u00fasicas onde este padr\u00e3o apareceu"
+    },
+    "last_used": {
+      "type": "string",
+      "format": "date",
+      "description": "\u00daltima vez que foi usado/identificado"
+    }
+  },
+  "required": [
+    "chords",
+    "pattern",
+    "progression_name"
+  ],
+  "rls": {
+    "read": null,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

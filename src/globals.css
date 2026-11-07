@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Aumenta o tamanho base da fonte, especialmente para mobile */
+  html {
+    font-size: 16px; /* Desktop padrão */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+  
+  /* Mobile: fonte maior para melhor legibilidade */
+  @media (max-width: 768px) {
+    html {
+      font-size: 18px; /* +2px no mobile */
+    }
+  }
+  
+  body {
+    @apply antialiased;
+    touch-action: manipulation;
+  }
+
+  /* Melhorias para touch em dispositivos móveis */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  /* Área mínima de toque para todos os botões e links */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove delay de 300ms no touch em dispositivos móveis */
+  * {
+    touch-action: manipulation;
+  }
+
+  /* Borda estilo corda rústica para cards e caixas */
+  .card, [class*="rounded-xl"], [class*="rounded-2xl"], [class*="rounded-lg"] {
+    border-style: solid;
+  }
+}

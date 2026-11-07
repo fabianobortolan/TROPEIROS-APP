@@ -1,0 +1,66 @@
+{
+  "name": "Frequencia",
+  "type": "object",
+  "properties": {
+    "data_aula": {
+      "type": "string",
+      "format": "date",
+      "description": "Data da aula"
+    },
+    "descricao_aula": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o ou t\u00edtulo da aula do dia"
+    },
+    "presencas": {
+      "type": "array",
+      "description": "Lista de presen\u00e7as",
+      "items": {
+        "type": "object",
+        "properties": {
+          "aluno_email": {
+            "type": "string"
+          },
+          "aluno_nome": {
+            "type": "string"
+          },
+          "presente": {
+            "type": "boolean",
+            "default": false
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "observacoes_gerais": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es gerais da aula"
+    }
+  },
+  "required": [
+    "data_aula"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

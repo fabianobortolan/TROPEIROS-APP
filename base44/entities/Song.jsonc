@@ -1,0 +1,614 @@
+{
+  "name": "Song",
+  "properties": {
+    "analysis_date": {
+      "description": "Data da \u00faltima an\u00e1lise de progress\u00f5es pelo motor",
+      "format": "date-time",
+      "type": "string"
+    },
+    "analysis_engine": {
+      "description": "Vers\u00e3o do motor que gerou as progress\u00f5es",
+      "type": "string"
+    },
+    "analysis_warnings": {
+      "description": "Avisos do motor harm\u00f4nico (ex.: tom cadastrado \u00d7 tom detectado)",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "annotations": {
+      "items": {
+        "properties": {
+          "note": {
+            "type": "string"
+          },
+          "section": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "apostila_settings": {
+      "description": "Ajustes de layout individuais da apostila salvos para esta m\u00fasica (persiste entre impress\u00f5es)",
+      "properties": {
+        "autoFit": {
+          "type": "boolean"
+        },
+        "breakLines": {
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "columns": {
+          "type": "number"
+        },
+        "customCifra": {
+          "description": "Cifra customizada para a apostila (edi\u00e7\u00e3o espec\u00edfica, preserva a original)",
+          "type": "string"
+        },
+        "customCifraBase": {
+          "description": "Snapshot da cifra original no momento em que customCifra foi salva; se a original for corrigida depois, este deixa de coincidir e a apostila passa a usar a original atualizada",
+          "type": "string"
+        },
+        "fontSize": {
+          "type": "string"
+        },
+        "letterSpacing": {
+          "description": "Espa\u00e7amento entre caracteres (px) \u2014 negativo condensa, positivo expande",
+          "type": "number"
+        },
+        "lineHeight": {
+          "type": "number"
+        },
+        "pageBreak": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "artist": {
+      "description": "Nome do artista ou dupla",
+      "type": "string"
+    },
+    "audio_url": {
+      "description": "URL do arquivo de \u00e1udio",
+      "type": "string"
+    },
+    "author": {
+      "description": "Nome do compositor/autor da m\u00fasica",
+      "type": "string"
+    },
+    "beats_per_measure": {
+      "default": 4,
+      "description": "Compasso da m\u00fasica (2, 3, 4 ou 6)",
+      "type": "number"
+    },
+    "chord_count": {
+      "description": "Quantidade de acordes \u00fanicos da m\u00fasica (fora da intro)",
+      "type": "number"
+    },
+    "cifra_comments": {
+      "description": "Coment\u00e1rios e anota\u00e7\u00f5es nas linhas da cifra",
+      "items": {
+        "properties": {
+          "color": {
+            "default": "yellow",
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "line_number": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "cifra_text": {
+      "description": "Texto da cifra com acordes",
+      "type": "string"
+    },
+    "countdown_duration": {
+      "default": 25,
+      "type": "number"
+    },
+    "duration": {
+      "description": "Dura\u00e7\u00e3o da m\u00fasica",
+      "type": "string"
+    },
+    "general_notes": {
+      "description": "Observa\u00e7\u00f5es gerais sobre a m\u00fasica",
+      "type": "string"
+    },
+    "genre_style": {
+      "enum": [
+        "sertanejo_raiz",
+        "sertanejo_universitario",
+        "sertanejo_romantico",
+        "sertanejo_moderno",
+        "sertanejo_modao",
+        "pop_rock",
+        "religioso",
+        "mpb",
+        "samba",
+        "forro"
+      ],
+      "type": "string"
+    },
+    "input_type": {
+      "enum": [
+        "audio",
+        "cifra"
+      ],
+      "type": "string"
+    },
+    "is_fully_revised": {
+      "default": false,
+      "description": "Indica se a m\u00fasica foi totalmente revisada e todas as informa\u00e7\u00f5es foram conferidas",
+      "type": "boolean"
+    },
+    "main_key": {
+      "description": "Tonalidade atual da m\u00fasica",
+      "type": "string"
+    },
+    "manual_notes": {
+      "type": "string"
+    },
+    "original_key": {
+      "description": "Tonalidade original da m\u00fasica",
+      "type": "string"
+    },
+    "playback_url": {
+      "description": "URL do playback/base para tocar junto",
+      "type": "string"
+    },
+    "predominant_progression": {
+      "type": "string"
+    },
+    "predominant_progression_pattern": {
+      "type": "string"
+    },
+    "progressions": {
+      "description": "Progress\u00f5es harm\u00f4nicas encontradas por se\u00e7\u00e3o",
+      "items": {
+        "properties": {
+          "borrowed": {
+            "description": "Empr\u00e9stimos modais",
+            "items": {
+              "properties": {
+                "chord": {
+                  "type": "string"
+                },
+                "degree": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "cadences": {
+            "description": "Cad\u00eancias (aut\u00eantica, plagal, deceptiva, semicad\u00eancia)",
+            "items": {
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "chords": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "degrees": {
+            "description": "Graus de cada acorde da se\u00e7\u00e3o, em ordem (motor harm\u00f4nico)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "end_timestamp": {
+            "description": "Timestamp do fim da se\u00e7\u00e3o (para loop preciso)",
+            "type": "string"
+          },
+          "functions": {
+            "description": "Fun\u00e7\u00e3o de cada acorde (T, S, D, Dprin, Dsec, DsecDec, SubV, iiSec, dimPass, dimDesc, dimAux, emp, crom)",
+            "items": {
+              "properties": {
+                "chord": {
+                  "type": "string"
+                },
+                "degree": {
+                  "type": "string"
+                },
+                "func": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "key": {
+            "type": "string"
+          },
+          "lines": {
+            "description": "Ca\u00eddas/subidas (crom\u00e1ticas ou diat\u00f4nicas) no baixo, fundamentais ou voz interna",
+            "items": {
+              "properties": {
+                "chords": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "voice": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "modulated_key": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "preparations": {
+            "description": "Acordes de prepara\u00e7\u00e3o (dominantes secund\u00e1rias, ii\u2013V, SubV, diminutos)",
+            "items": {
+              "properties": {
+                "chords": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "degrees": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "target": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "progression_name": {
+            "type": "string"
+          },
+          "section": {
+            "type": "string"
+          },
+          "skeleton": {
+            "description": "Esqueleto funcional sem prepara\u00e7\u00f5es e repeti\u00e7\u00f5es",
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "variation_name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "progressions_backup": {
+      "description": "C\u00f3pia das progress\u00f5es anteriores \u00e0 primeira an\u00e1lise pelo motor harm\u00f4nico",
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "rhythm_id": {
+      "description": "ID do ritmo da m\u00fasica",
+      "type": "string"
+    },
+    "rhythm_name": {
+      "description": "Nome do ritmo da m\u00fasica",
+      "type": "string"
+    },
+    "scroll_speed": {
+      "default": 0.5,
+      "type": "number"
+    },
+    "solo_image_url": {
+      "description": "URL da imagem PNG com o solo da m\u00fasica",
+      "type": "string"
+    },
+    "solo_midi_url": {
+      "description": "URL do arquivo MIDI com o solo da m\u00fasica para playback",
+      "type": "string"
+    },
+    "solo_pdf_url": {
+      "description": "URL do PDF com o solo da m\u00fasica",
+      "type": "string"
+    },
+    "solo_tab": {
+      "description": "Tablatura digital do solo/ponteio (formato tropeiros-tab-v1) para o player 'Tocar junto'",
+      "properties": {
+        "beatsPerBar": {
+          "type": "number"
+        },
+        "bpm": {
+          "type": "number"
+        },
+        "format": {
+          "type": "string"
+        },
+        "measures": {
+          "items": {
+            "properties": {
+              "chords": {
+                "description": "Cada item: [tempo, nome_do_acorde]",
+                "items": {
+                  "items": {
+                    "type": [
+                      "number",
+                      "string",
+                      "object",
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "notes": {
+                "description": "Cada item: [tempo, duracao, par, casa, extras?]",
+                "items": {
+                  "items": {
+                    "type": [
+                      "number",
+                      "string",
+                      "object",
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "octavePairs": {
+          "description": "Pares que possuem corda em oitava",
+          "items": {
+            "type": "number"
+          },
+          "type": "array"
+        },
+        "time": {
+          "type": "string"
+        },
+        "tuning": {
+          "description": "Nota MIDI de cada par solto (chaves 1-5)",
+          "properties": {
+            "1": {
+              "type": "number"
+            },
+            "2": {
+              "type": "number"
+            },
+            "3": {
+              "type": "number"
+            },
+            "4": {
+              "type": "number"
+            },
+            "5": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "tempo": {
+      "description": "BPM da m\u00fasica",
+      "type": "number"
+    },
+    "title": {
+      "description": "T\u00edtulo da m\u00fasica",
+      "type": "string"
+    },
+    "validation_date": {
+      "description": "Data da \u00faltima auditoria da cifra",
+      "format": "date-time",
+      "type": "string"
+    },
+    "validation_foreign_ratio": {
+      "description": "Propor\u00e7\u00e3o de acordes fora do campo harm\u00f4nico (0-1), descontando empr\u00e9stimos comuns",
+      "type": "number"
+    },
+    "validation_ignored": {
+      "description": "Alertas marcados como ignorados (falso positivo), com motivo",
+      "items": {
+        "properties": {
+          "ignored_at": {
+            "description": "Data em que foi ignorado",
+            "format": "date-time",
+            "type": "string"
+          },
+          "ignored_by": {
+            "description": "Email de quem ignorou",
+            "type": "string"
+          },
+          "line": {
+            "description": "Linha da cifra a que se referia (quando aplic\u00e1vel)",
+            "type": "number"
+          },
+          "message": {
+            "description": "Resumo da mensagem do alerta ignorado",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Motivo informado pelo admin para ignorar",
+            "type": "string"
+          },
+          "type": {
+            "description": "Tipo do alerta ignorado",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "validation_issues": {
+      "description": "Lista de alertas encontrados na auditoria da cifra",
+      "items": {
+        "properties": {
+          "detail": {
+            "type": "object"
+          },
+          "line": {
+            "description": "N\u00famero da linha da cifra (1-based) quando aplic\u00e1vel",
+            "type": "number"
+          },
+          "message": {
+            "description": "Mensagem clara em portugu\u00eas",
+            "type": "string"
+          },
+          "section": {
+            "description": "Se\u00e7\u00e3o da m\u00fasica a que o alerta se refere",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Severidade do alerta individual (alto, medio, baixo)",
+            "type": "string"
+          },
+          "suggestion": {
+            "description": "Sugest\u00e3o de corre\u00e7\u00e3o quando aplic\u00e1vel",
+            "type": "object"
+          },
+          "type": {
+            "description": "Tipo do alerta (ex: acorde_invalido, enarmonico, tom_detectado, inconsistencia)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "validation_main_key": {
+      "description": "Tonalidade usada como refer\u00eancia na auditoria",
+      "type": "string"
+    },
+    "validation_score": {
+      "description": "Nota da auditoria de 0 a 100 (100 = sem problemas)",
+      "type": "number"
+    },
+    "validation_severity": {
+      "description": "Resultado da auditoria autom\u00e1tica da cifra (an\u00e1lise comparativa de se\u00e7\u00f5es + campo harm\u00f4nico + verifica\u00e7\u00e3o de transcri\u00e7\u00e3o)",
+      "enum": [
+        "ok",
+        "atencao",
+        "suspeito",
+        "critico"
+      ],
+      "type": "string"
+    },
+    "year": {
+      "description": "Ano de lan\u00e7amento da m\u00fasica",
+      "type": "number"
+    }
+  },
+  "required": [
+    "title",
+    "artist"
+  ],
+  "type": "object",
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "name": "StudyPlan",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome do plano de estudos"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de in\u00edcio da semana"
+    },
+    "week_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de fim da semana"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o geral do plano"
+    },
+    "theory_topics": {
+      "type": "array",
+      "description": "T\u00f3picos de teoria musical",
+      "items": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "T\u00f3pico (ex: Escala Maior, Campo Harm\u00f4nico)"
+          },
+          "key": {
+            "type": "string",
+            "description": "Tonalidade a estudar"
+          },
+          "duration_minutes": {
+            "type": "number",
+            "description": "Tempo sugerido em minutos"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Observa\u00e7\u00f5es"
+          }
+        }
+      }
+    },
+    "technique_exercises": {
+      "type": "array",
+      "description": "Exerc\u00edcios t\u00e9cnicos",
+      "items": {
+        "type": "object",
+        "properties": {
+          "exercise": {
+            "type": "string",
+            "description": "Nome do exerc\u00edcio"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "palhetada",
+              "dedilhado",
+              "acordes",
+              "ritmo",
+              "velocidade",
+              "transicao"
+            ],
+            "description": "Categoria do exerc\u00edcio"
+          },
+          "rhythm": {
+            "type": "string",
+            "description": "Ritmo a praticar"
+          },
+          "bpm_start": {
+            "type": "number",
+            "description": "BPM inicial"
+          },
+          "bpm_goal": {
+            "type": "number",
+            "description": "BPM meta"
+          },
+          "duration_minutes": {
+            "type": "number",
+            "description": "Tempo sugerido"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Observa\u00e7\u00f5es"
+          }
+        }
+      }
+    },
+    "repertoire_songs": {
+      "type": "array",
+      "description": "M\u00fasicas do repert\u00f3rio para estudar",
+      "items": {
+        "type": "object",
+        "properties": {
+          "song_id": {
+            "type": "string",
+            "description": "ID da m\u00fasica"
+          },
+          "song_title": {
+            "type": "string",
+            "description": "T\u00edtulo da m\u00fasica"
+          },
+          "song_artist": {
+            "type": "string",
+            "description": "Artista"
+          },
+          "focus": {
+            "type": "string",
+            "description": "Foco do estudo (intro, verso, refr\u00e3o, solo, m\u00fasica completa)"
+          },
+          "key": {
+            "type": "string",
+            "description": "Tonalidade"
+          },
+          "rhythm": {
+            "type": "string",
+            "description": "Ritmo"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Observa\u00e7\u00f5es"
+          }
+        }
+      }
+    },
+    "daily_schedule": {
+      "type": "object",
+      "description": "Distribui\u00e7\u00e3o por dia da semana",
+      "properties": {
+        "segunda": {
+          "type": "string"
+        },
+        "terca": {
+          "type": "string"
+        },
+        "quarta": {
+          "type": "string"
+        },
+        "quinta": {
+          "type": "string"
+        },
+        "sexta": {
+          "type": "string"
+        },
+        "sabado": {
+          "type": "string"
+        },
+        "domingo": {
+          "type": "string"
+        }
+      }
+    },
+    "total_hours": {
+      "type": "number",
+      "description": "Total de horas de estudo na semana"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "ativo",
+        "concluido"
+      ],
+      "default": "rascunho",
+      "description": "Status do plano"
+    }
+  },
+  "required": [
+    "name",
+    "week_start"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

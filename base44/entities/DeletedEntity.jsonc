@@ -1,0 +1,70 @@
+{
+  "name": "DeletedEntity",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "description": "Tipo de entidade deletada"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID original da entidade"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Nome ou t\u00edtulo da entidade deletada"
+    },
+    "entity_data": {
+      "type": "object",
+      "description": "Dados completos da entidade antes da dele\u00e7\u00e3o"
+    },
+    "deleted_by": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que deletou"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Quando foi deletado"
+    },
+    "restore_deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "At\u00e9 quando pode ser restaurado (30 dias)"
+    },
+    "can_restore": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se ainda pode ser restaurado"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "entity_data",
+    "deleted_by",
+    "deleted_at"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

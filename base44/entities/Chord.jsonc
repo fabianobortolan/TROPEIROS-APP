@@ -1,0 +1,107 @@
+{
+  "name": "Chord",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome do acorde (ex: C, Am, G7, D#m)"
+    },
+    "instrument": {
+      "type": "string",
+      "enum": [
+        "violao",
+        "viola"
+      ],
+      "description": "Instrumento: viol\u00e3o ou viola"
+    },
+    "diagram": {
+      "type": "string",
+      "description": "Diagrama\u00e7\u00e3o do acorde (formato texto ou JSON)"
+    },
+    "position": {
+      "type": "number",
+      "description": "Posi\u00e7\u00e3o/varia\u00e7\u00e3o do acorde (1, 2, 3...)"
+    },
+    "fingers": {
+      "type": "string",
+      "description": "Dedilhado sugerido (ex: 1-2-3-4 ou descritivo)"
+    },
+    "fret": {
+      "type": "number",
+      "description": "Casa inicial (traste) onde come\u00e7a o acorde"
+    },
+    "barre_fret": {
+      "type": "number",
+      "description": "Casa da pestana (se houver)"
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Estado de cada corda (ex: ['x', '0', '2', '2', '1', '0'])"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Notas musicais do acorde (ex: ['C', 'E', 'G'])"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "facil",
+        "medio",
+        "dificil",
+        "avancado"
+      ],
+      "description": "N\u00edvel de dificuldade"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "maior",
+        "menor",
+        "setima",
+        "maior_com_setima",
+        "menor_com_setima",
+        "diminuto",
+        "aumentado",
+        "sus",
+        "outros"
+      ],
+      "description": "Categoria do acorde"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o ou observa\u00e7\u00f5es sobre o acorde"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL de imagem com o diagrama visual"
+    }
+  },
+  "required": [
+    "name",
+    "instrument"
+  ],
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

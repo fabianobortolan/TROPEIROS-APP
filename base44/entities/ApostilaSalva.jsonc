@@ -1,0 +1,102 @@
+{
+  "name": "ApostilaSalva",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome dado \u00e0 apostila salva"
+    },
+    "config": {
+      "type": "object",
+      "description": "Configura\u00e7\u00e3o completa da apostila para reedi\u00e7\u00e3o",
+      "properties": {
+        "excludedIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "IDs das m\u00fasicas exclu\u00eddas da apostila"
+        },
+        "sertanejoOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "IDs das m\u00fasicas sertanejas na ordem definida"
+        },
+        "popRockOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "IDs das m\u00fasicas pop/rock na ordem definida"
+        },
+        "groupByRhythm": {
+          "type": "boolean",
+          "description": "Se a apostila est\u00e1 agrupada por ritmo"
+        },
+        "layoutColumns": {
+          "type": "number"
+        },
+        "layoutFontSize": {
+          "type": "string"
+        },
+        "layoutCompact": {
+          "type": "boolean"
+        },
+        "layoutMargin": {
+          "type": "string"
+        },
+        "layoutLineHeight": {
+          "type": "number"
+        },
+        "layoutLetterSpacing": {
+          "type": "number",
+          "description": "Espa\u00e7amento entre caracteres (px) \u2014 negativo condensa, positivo expande"
+        },
+        "layoutSongSpacing": {
+          "type": "number"
+        },
+        "layoutAutoFit": {
+          "type": "boolean"
+        },
+        "layoutChordNames": {
+          "type": "boolean"
+        },
+        "songOverrides": {
+          "type": "object",
+          "description": "Ajustes individuais por m\u00fasica (fontSize, columns, pageBreak, lineHeight, letterSpacing, breakLines, autoFit, customCifra) indexados pelo ID da m\u00fasica",
+          "properties": {},
+          "additionalProperties": true
+        }
+      }
+    },
+    "total_musicas": {
+      "type": "number",
+      "description": "Total de m\u00fasicas na apostila salva",
+      "default": 0
+    }
+  },
+  "required": [
+    "nome",
+    "config"
+  ],
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
