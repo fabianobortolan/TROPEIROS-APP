@@ -1,0 +1,7 @@
+# Publicação automática no Netlify a cada atualização do repositório
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
