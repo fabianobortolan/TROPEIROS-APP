@@ -136,6 +136,9 @@ async function claude(body: any) {
 }
 
 // deno-lint-ignore no-explicit-any
+const consumo = (r: any) => `[saída: ${r?.usage?.output_tokens ?? "?"} tokens; raciocínio: ${r?.usage?.output_tokens_details?.thinking_tokens ?? "?"}]`;
+
+// deno-lint-ignore no-explicit-any
 const textoDe = (resp: any) => (resp.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
 
 function extraiJson(texto: string) {
@@ -194,9 +197,10 @@ async function invokeLLM(p: any) {
   try {
     const r = await claude({
       model, max_tokens: MAX_TOKENS, system: sistema, messages: mensagens,
+      thinking: { type: "between_tools" },
       output_config: { effort: "medium", format: { type: "json_schema", schema: esquema } },
     });
-    if (r.stop_reason === "max_tokens") throw new Falha("A resposta da IA ficou longa demais e foi cortada. Tente com um pedido menor.", 502);
+    if (r.stop_reason === "max_tokens") throw new Falha(`A resposta da IA ficou longa demais e foi cortada. Tente com um pedido menor. ${consumo(r)}`, 502);
     if (r.stop_reason === "refusal") throw new Falha("A IA recusou este pedido.", 422);
     return JSON.parse(textoDe(r));
   } catch (e) {
@@ -206,9 +210,10 @@ async function invokeLLM(p: any) {
       model, max_tokens: MAX_TOKENS, system: sistema + " Responda SOMENTE com um objeto JSON válido, sem texto antes ou depois.",
       messages: [{ role: "user", content: [...arquivos, { type: "text", text:
         `${textoPedido}\n\nResponda SOMENTE com um objeto JSON que siga este esquema:\n${JSON.stringify(p.response_json_schema)}` }] }],
+      thinking: { type: "between_tools" },
       output_config: { effort: "medium" },
     });
-    if (r.stop_reason === "max_tokens") throw new Falha("A resposta da IA ficou longa demais e foi cortada. Tente com um pedido menor.", 502);
+    if (r.stop_reason === "max_tokens") throw new Falha(`A resposta da IA ficou longa demais e foi cortada. Tente com um pedido menor. ${consumo(r)}`, 502);
     return extraiJson(textoDe(r));
   }
 }
