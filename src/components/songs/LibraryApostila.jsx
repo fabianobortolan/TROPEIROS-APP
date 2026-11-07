@@ -15,6 +15,8 @@ const POP_ROCK_GENRES = [
   "pop", "rock", "pop_rock", "hard_rock", "metal", "punk", "blues_rock",
   "indie", "alternativo", "classico_rock", "pop_internacional"
 ];
+// Gêneros da Biblioteca Samba, MPB & Forró (mesma lista da LibrarySambaMPB)
+const SAMBA_MPB_GENRES = ["mpb", "samba", "forro"];
 
 function escapeHtml(text) {
   return (text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -74,6 +76,7 @@ export default function LibraryApostila({ onClose }) {
   const [loadingSongs, setLoadingSongs] = useState(true);
   const [sertanejoSongs, setSertanejoSongs] = useState([]);
   const [popRockSongs, setPopRockSongs] = useState([]);
+  const [sambaSongs, setSambaSongs] = useState([]);
   const [excludedIds, setExcludedIds] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRhythms, setSelectedRhythms] = useState(new Set());
@@ -124,10 +127,12 @@ export default function LibraryApostila({ onClose }) {
         }
         if (cancelled) return;
         all.sort((a, b) => (a.title || "").localeCompare(b.title || "", 'pt-BR'));
-        const sert = all.filter(s => !POP_ROCK_GENRES.includes(s.genre_style));
+        const sert = all.filter(s => !POP_ROCK_GENRES.includes(s.genre_style) && !SAMBA_MPB_GENRES.includes(s.genre_style));
         const pop = all.filter(s => POP_ROCK_GENRES.includes(s.genre_style));
+        const samba = all.filter(s => SAMBA_MPB_GENRES.includes(s.genre_style));
         setSertanejoSongs(sert);
         setPopRockSongs(pop);
+        setSambaSongs(samba);
         // Por padrão NENHUMA música está marcada — o usuário seleciona (✓)
         // apenas as que quer na apostila. Antes todas entravam automaticamente,
         // o que fazia o gerador buscar a biblioteca inteira (339 músicas).
@@ -175,14 +180,15 @@ export default function LibraryApostila({ onClose }) {
 
   const allRhythms = useMemo(() => {
     const set = new Set();
-    [...sertanejoSongs, ...popRockSongs].forEach(s => {
+    [...sertanejoSongs, ...sambaSongs, ...popRockSongs].forEach(s => {
       if (s.rhythm_name) set.add(s.rhythm_name);
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  }, [sertanejoSongs, popRockSongs]);
+  }, [sertanejoSongs, sambaSongs, popRockSongs]);
 
   const visibleSertanejo = filterBySearch(sertanejoSongs);
   const visiblePopRock = filterBySearch(popRockSongs);
+  const visibleSamba = filterBySearch(sambaSongs);
 
   // Reordenação manual — troca na lista VISÍVEL e reconstrói a lista completa
   const moveSong = (fullList, setFullList, visibleList, songId, dir) => {
@@ -200,9 +206,11 @@ export default function LibraryApostila({ onClose }) {
   };
   const moveSertanejo = (songId, dir) => moveSong(sertanejoSongs, setSertanejoSongs, visibleSertanejo, songId, dir);
   const movePopRock = (songId, dir) => moveSong(popRockSongs, setPopRockSongs, visiblePopRock, songId, dir);
+  const moveSamba = (songId, dir) => moveSong(sambaSongs, setSambaSongs, visibleSamba, songId, dir);
   // Reordenação na etapa de organização — opera somente entre as músicas selecionadas
   const moveSelectedSertanejo = (songId, dir) => moveSong(sertanejoSongs, setSertanejoSongs, finalSertanejo, songId, dir);
   const moveSelectedPopRock = (songId, dir) => moveSong(popRockSongs, setPopRockSongs, finalPopRock, songId, dir);
+  const moveSelectedSamba = (songId, dir) => moveSong(sambaSongs, setSambaSongs, finalSamba, songId, dir);
   // Move uma música para uma posição absoluta (1-based) dentro da sequência selecionada
   const moveSongToPosition = (fullList, setFullList, visibleList, songId, targetPos) => {
     setDirty(true);
@@ -220,6 +228,7 @@ export default function LibraryApostila({ onClose }) {
   };
   const moveToPositionSertanejo = (songId, pos) => moveSongToPosition(sertanejoSongs, setSertanejoSongs, finalSertanejo, songId, pos);
   const moveToPositionPopRock = (songId, pos) => moveSongToPosition(popRockSongs, setPopRockSongs, finalPopRock, songId, pos);
+  const moveToPositionSamba = (songId, pos) => moveSongToPosition(sambaSongs, setSambaSongs, finalSamba, songId, pos);
 
   // Move uma música para o final da lista completa (usado ao inserir na apostila)
   const moveToEnd = (fullList, setFullList, songId) => {
@@ -242,6 +251,7 @@ export default function LibraryApostila({ onClose }) {
     // Toda música inserida entra sempre no final da sequência
     moveToEnd(sertanejoSongs, setSertanejoSongs, song.id);
     moveToEnd(popRockSongs, setPopRockSongs, song.id);
+    moveToEnd(sambaSongs, setSambaSongs, song.id);
   };
 
   const toggleExclude = (songId) => {
@@ -256,6 +266,7 @@ export default function LibraryApostila({ onClose }) {
     if (excludedIds.has(songId)) {
       moveToEnd(sertanejoSongs, setSertanejoSongs, songId);
       moveToEnd(popRockSongs, setPopRockSongs, songId);
+      moveToEnd(sambaSongs, setSambaSongs, songId);
     }
   };
 
@@ -287,6 +298,20 @@ export default function LibraryApostila({ onClose }) {
     });
   };
 
+  const toggleAllSamba = () => {
+    setDirty(true);
+    setExcludedIds(prev => {
+      const next = new Set(prev);
+      const list = visibleSamba.length > 0 ? visibleSamba : sambaSongs;
+      const allExcluded = list.every(s => next.has(s.id));
+      list.forEach(s => {
+        if (allExcluded) next.delete(s.id);
+        else next.add(s.id);
+      });
+      return next;
+    });
+  };
+
   const toggleRhythm = (rhythm) => {
     setSelectedRhythms(prev => {
       const next = new Set(prev);
@@ -301,7 +326,7 @@ export default function LibraryApostila({ onClose }) {
     setDirty(true);
     setExcludedIds(prev => {
       const next = new Set(prev);
-      [...sertanejoSongs, ...popRockSongs].forEach(s => {
+      [...sertanejoSongs, ...sambaSongs, ...popRockSongs].forEach(s => {
         if (!selectedRhythms.has(s.rhythm_name || "")) next.add(s.id);
         else next.delete(s.id);
       });
@@ -312,7 +337,8 @@ export default function LibraryApostila({ onClose }) {
   // Listas finais (sem as excluídas)
   const finalSertanejo = useMemo(() => sertanejoSongs.filter(s => !excludedIds.has(s.id)), [sertanejoSongs, excludedIds]);
   const finalPopRock = useMemo(() => popRockSongs.filter(s => !excludedIds.has(s.id)), [popRockSongs, excludedIds]);
-  const totalSelected = finalSertanejo.length + finalPopRock.length;
+  const finalSamba = useMemo(() => sambaSongs.filter(s => !excludedIds.has(s.id)), [sambaSongs, excludedIds]);
+  const totalSelected = finalSertanejo.length + finalSamba.length + finalPopRock.length;
 
   const fontSizeMap = { pequeno: "8pt", medio: "10pt", grande: "12pt", extra: "14pt", gigante: "16pt", xxg: "18pt" };
   const marginMap = { estreito: "10mm", normal: "16mm", largo: "22mm" };
@@ -388,7 +414,7 @@ export default function LibraryApostila({ onClose }) {
   // Sincroniza TODAS as músicas que têm edição de cifra salva na apostila,
   // descartando o snapshot e fazendo a apostila usar a cifra original atualizada.
   const syncAllCifras = () => {
-    const allSongs = [...sertanejoSongs, ...popRockSongs];
+    const allSongs = [...sertanejoSongs, ...sambaSongs, ...popRockSongs];
     const withCustom = allSongs.filter(s => !!(getSongSettings(s.id).customCifra));
     if (withCustom.length === 0) {
       alert("Nenhuma música tem edição de cifra salva na apostila.");
@@ -757,7 +783,9 @@ ${songBlock}
     setTimeout(() => {
       const sertList = groupByRhythm ? groupedByRhythm(finalSertanejo).flat : finalSertanejo;
       const popList = groupByRhythm ? groupedByRhythm(finalPopRock).flat : finalPopRock;
+      const sambaList = groupByRhythm ? groupedByRhythm(finalSamba).flat : finalSamba;
       const sertBlocks = buildSongsSequential(sertList, previewOnly);
+      const sambaBlocks = buildSongsSequential(sambaList, previewOnly);
       const popBlocks = buildSongsSequential(popList, previewOnly);
       const previewBanner = previewOnly ? `
   <div style="position:sticky;top:0;background:#D4AF37;color:#3a2a10;font-weight:700;font-size:10pt;padding:6px 12px;text-align:center;z-index:10;border-bottom:1px solid #b8941f;">
@@ -859,6 +887,7 @@ ${previewBanner}
   <div class="cover-stats">
     ${finalSertanejo.length > 0 ? `<div class="cover-stat"><div class="cover-stat-num">${finalSertanejo.length}</div><div class="cover-stat-label">Sertanejas</div></div>` : ""}
     ${finalPopRock.length > 0 ? `<div class="cover-stat"><div class="cover-stat-num">${finalPopRock.length}</div><div class="cover-stat-label">Pop/Rock</div></div>` : ""}
+    ${finalSamba.length > 0 ? `<div class="cover-stat"><div class="cover-stat-num">${finalSamba.length}</div><div class="cover-stat-label">Samba, MPB &amp; Forró</div></div>` : ""}
   </div>
 </div>
 
@@ -869,6 +898,10 @@ ${sertBlocks}
 ${finalPopRock.length > 0 ? buildSectionDivider("Biblioteca Pop/Rock", `${finalPopRock.length} músicas`, "#6B4C9A", "🎸") : ""}
 ${finalPopRock.length > 0 ? buildIndex(popList, "Biblioteca Pop/Rock", "#6B4C9A") : ""}
 ${popBlocks}
+
+${finalSamba.length > 0 ? buildSectionDivider("Biblioteca Samba, MPB & Forró", `${finalSamba.length} músicas`, "#15803d", "🥁") : ""}
+${finalSamba.length > 0 ? buildIndex(sambaList, "Biblioteca Samba, MPB & Forró", "#15803d") : ""}
+${sambaBlocks}
 
 </div>
 
@@ -1384,12 +1417,14 @@ window.onload = function() {
 
   const allSertExcluded = visibleSertanejo.length > 0 && visibleSertanejo.every(s => excludedIds.has(s.id));
   const allPopExcluded = visiblePopRock.length > 0 && visiblePopRock.every(s => excludedIds.has(s.id));
+  const allSambaExcluded = visibleSamba.length > 0 && visibleSamba.every(s => excludedIds.has(s.id));
 
   // Monta a configuração atual da apostila para salvar
   const buildConfig = () => ({
     excludedIds: Array.from(excludedIds),
     sertanejoOrder: sertanejoSongs.map(s => s.id),
     popRockOrder: popRockSongs.map(s => s.id),
+    sambaOrder: sambaSongs.map(s => s.id),
     groupByRhythm,
     layoutColumns,
     layoutFontSize,
@@ -1433,8 +1468,8 @@ window.onload = function() {
     // Restaura exclusões + exclui automaticamente as músicas adicionadas ao
     // repertório DEPOIS do salvamento (a apostila salva não as conhecia —
     // antes elas eram inseridas sozinhas no fim da sequência)
-    const savedIds = new Set([...(config.sertanejoOrder || []), ...(config.popRockOrder || [])]);
-    const unknownIds = [...sertanejoSongs, ...popRockSongs]
+    const savedIds = new Set([...(config.sertanejoOrder || []), ...(config.popRockOrder || []), ...(config.sambaOrder || [])]);
+    const unknownIds = [...sertanejoSongs, ...sambaSongs, ...popRockSongs]
       .filter(s => !savedIds.has(s.id))
       .map(s => s.id);
     setExcludedIds(new Set([...(config.excludedIds || []), ...unknownIds]));
@@ -1451,6 +1486,8 @@ window.onload = function() {
     };
     setSertanejoSongs(prev => reorder(prev, config.sertanejoOrder || []));
     setPopRockSongs(prev => reorder(prev, config.popRockOrder || []));
+    // Apostilas salvas antes desta seção tinham Samba/MPB/Forró dentro da ordem sertaneja
+    setSambaSongs(prev => reorder(prev, config.sambaOrder || config.sertanejoOrder || []));
     setStep("organizar");
   };
 
@@ -1506,7 +1543,7 @@ window.onload = function() {
             {step === "selecionar" ? (
               <>
               {/* Resumo */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="bg-[#F5F1E8] rounded-xl p-3 text-center border-2 border-[#8B6F47]/30">
                   <LibraryIcon className="w-5 h-5 text-[#8B6F47] mx-auto mb-0.5" />
                   <div className="text-xl font-bold text-[#8B6F47]">{finalSertanejo.length}<span className="text-xs text-stone-400">/{sertanejoSongs.length}</span></div>
@@ -1516,6 +1553,11 @@ window.onload = function() {
                   <Music className="w-5 h-5 text-violet-600 mx-auto mb-0.5" />
                   <div className="text-xl font-bold text-violet-600">{finalPopRock.length}<span className="text-xs text-stone-400">/{popRockSongs.length}</span></div>
                   <div className="text-[10px] text-violet-400 uppercase tracking-wide">Pop/Rock</div>
+                </div>
+                <div className="bg-green-50 rounded-xl p-3 text-center border-2 border-green-300">
+                  <Music className="w-5 h-5 text-green-700 mx-auto mb-0.5" />
+                  <div className="text-xl font-bold text-green-700">{finalSamba.length}<span className="text-xs text-stone-400">/{sambaSongs.length}</span></div>
+                  <div className="text-[10px] text-green-600 uppercase tracking-wide">Samba, MPB &amp; Forró</div>
                 </div>
               </div>
 
@@ -1665,6 +1707,16 @@ window.onload = function() {
                 </div>
               )}
 
+              {/* Lista Samba, MPB & Forró */}
+              {visibleSamba.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Music className="w-3.5 h-3.5" /> Samba, MPB &amp; Forró
+                  </p>
+                  {renderSongList(visibleSamba, "#15803d", toggleAllSamba, allSambaExcluded, moveSamba)}
+                </div>
+              )}
+
               {/* Botões — Seleção */}
               <div className="flex gap-2 pt-2">
                 <Button
@@ -1717,7 +1769,7 @@ window.onload = function() {
               {renderChordNotation()}
 
               <ApostilaEditSongs
-                allSongs={[...sertanejoSongs, ...popRockSongs]}
+                allSongs={[...sertanejoSongs, ...sambaSongs, ...popRockSongs]}
                 excludedIds={excludedIds}
                 onAdd={addToSequence}
                 onRemove={(s) => toggleExclude(s.id)}
@@ -1810,6 +1862,65 @@ window.onload = function() {
                               onClick={(e) => { e.stopPropagation(); moveSelectedPopRock(song.id, 1); }}
                               disabled={idx === finalPopRock.length - 1}
                               className="p-0.5 text-stone-400 hover:text-violet-600 hover:bg-black/5 rounded-md leading-none disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                              style={{ height: 20, width: 20 }}
+                              title="Mover para baixo"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleExclude(song.id); }}
+                              className="p-0.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-md leading-none flex items-center justify-center"
+                              style={{ height: 20, width: 20 }}
+                              title="Remover da apostila"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                        <SongAdjustPanel
+                          song={song}
+                          settings={getSongSettings(song.id)}
+                          onSetOverride={setSongOverride}
+                          onClearOverride={clearSongOverride}
+                          onClearCustomCifra={(id) => saveCustomCifra(id, null, null)}
+                          onEditCifra={() => { setEditorSong(song); setEditorStartInEdit(true); }}
+                          onBreakEditor={() => { setEditorSong(song); setEditorStartInEdit(false); }}
+                          onPreview={() => handlePreviewSong(song)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {finalSamba.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Music className="w-3.5 h-3.5" /> Samba, MPB &amp; Forró ({finalSamba.length})
+                  </p>
+                  <div className="space-y-1">
+                    {finalSamba.map((song, idx) => (
+                      <div key={song.id}>
+                        <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-green-50/70 hover:bg-green-50 transition-colors">
+                          <SeqPositionBadge position={idx + 1} onApply={(pos) => moveToPositionSamba(song.id, pos)} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-stone-700 truncate">{song.title}</p>
+                            <p className="text-[10px] text-stone-500 truncate">{song.artist}{song.main_key ? ` • ${song.main_key}` : ''}</p>
+                          </div>
+                          <div className="flex flex-col flex-shrink-0 gap-0.5">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); moveSelectedSamba(song.id, -1); }}
+                              disabled={idx === 0}
+                              className="p-0.5 text-stone-400 hover:text-green-700 hover:bg-black/5 rounded-md leading-none disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                              style={{ height: 20, width: 20 }}
+                              title="Mover para cima"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); moveSelectedSamba(song.id, 1); }}
+                              disabled={idx === finalSamba.length - 1}
+                              className="p-0.5 text-stone-400 hover:text-green-700 hover:bg-black/5 rounded-md leading-none disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
                               style={{ height: 20, width: 20 }}
                               title="Mover para baixo"
                             >
