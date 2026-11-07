@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { linkDoRepertorio } from "@/lib/repertorioStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -678,7 +679,21 @@ Tropeiros do Bebedouro
                           Copiar para WhatsApp
                         </Button>
 
-                        <div className="border-t border-[#D4C5B0] pt-3">
+                        <Button
+                          onClick={() => {
+                            navigator.clipboard.writeText(linkDoRepertorio(setlist))
+                              .then(() => { alert('✅ Link copiado! Mande para os amigos: ao abrir, eles podem guardar este repertório no app.'); setShowShareMenu(false); })
+                              .catch(() => alert('❌ Erro ao copiar. Tente novamente.'));
+                          }}
+                          variant="outline"
+                          className="w-full justify-start border-[#8B6F47] text-[#8B6F47] hover:bg-[#8B6F47] hover:text-white"
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Copiar link do repertório
+                        </Button>
+
+                        {/* Envio por e-mail ainda não configurado na versão nova do app */}
+                        {false && <div className="border-t border-[#D4C5B0] pt-3">
                           <Label htmlFor="share-email-input" className="text-xs text-[#8B6F47] mb-2 block">
                             Enviar por Email
                           </Label>
@@ -704,7 +719,7 @@ Tropeiros do Bebedouro
                               )}
                             </Button>
                           </div>
-                        </div>
+                        </div>}
                       </div>
 
                       <Button

@@ -10,10 +10,10 @@ const navigationItems = [
   { title: "Biblioteca Pop/Rock", url: "/LibraryPopRock", icon: Zap, publicItem: true },
   { title: "Biblioteca Samba, MPB & Forró", url: "/LibrarySambaMPB", icon: Waves, publicItem: true },
   { title: "Biblioteca Instrumental", url: "/LibraryInstrumental", icon: FileText, publicItem: true },
-  { title: "Repertórios", url: createPageUrl("Setlists"), icon: ListMusic },
+  { title: "Repertórios", url: createPageUrl("Setlists"), icon: ListMusic, publicItem: true },
   { title: "Metrônomo", url: createPageUrl("MetronomePage"), icon: Timer },
   { title: "Progressões", url: createPageUrl("Progressions"), icon: Waves },
-  { title: "Escalas", url: createPageUrl("Scales"), icon: Music2 },
+  { title: "Escalas", url: createPageUrl("Scales"), icon: Music2, publicItem: true },
   { title: "Modo Estudo", url: createPageUrl("ModoEstudo"), icon: BookMarked },
   { title: "Treinamento Auditivo", url: "/HarmonicEarTraining", icon: Ear },
   {

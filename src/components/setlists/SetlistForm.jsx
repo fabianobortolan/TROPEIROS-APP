@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { Repertorios } from "@/lib/repertorioStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,7 @@ export default function SetlistForm({ setlist, songs, onClose }) {
   const [selectedSongId, setSelectedSongId] = useState("");
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Setlist.create(data),
+    mutationFn: (data) => Repertorios.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['setlists'] });
       onClose();
@@ -33,7 +34,7 @@ export default function SetlistForm({ setlist, songs, onClose }) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Setlist.update(id, data),
+    mutationFn: ({ id, data }) => Repertorios.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['setlists'] });
       onClose();

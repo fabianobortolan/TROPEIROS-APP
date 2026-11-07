@@ -37,7 +37,7 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 const ADMIN_ONLY_PAGES = new Set(["Backup", "Reports", "DataProtection"]);
 
 // Páginas abertas a visitantes sem login (somente leitura da biblioteca)
-const PUBLIC_PATHS = new Set(["/", "/library", "/librarypoprock", "/librarysambampb", "/libraryinstrumental"]);
+const PUBLIC_PATHS = new Set(["/", "/library", "/librarypoprock", "/librarysambampb", "/libraryinstrumental", "/scales", "/setlists"]);
 const isPublicPath = (pathname) => PUBLIC_PATHS.has((pathname || "/").replace(/\/+$/, "").toLowerCase() || "/");
 
 const AuthenticatedApp = () => {

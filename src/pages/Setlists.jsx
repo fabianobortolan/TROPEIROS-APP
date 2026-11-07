@@ -1,6 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import GerarRepertorioIA from './GerarRepertorioIA';
 import { base44 } from "@/api/base44Client";
+import { Repertorios, lerRepertorioDoLink } from "@/lib/repertorioStore";
+import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +30,7 @@ export default function Setlists() {
   const [caching, setCaching] = useState(false);
   const [cacheOk, setCacheOk] = useState(false);
 
-  const fetchSetlists = useCallback(() => base44.entities.Setlist.list('-created_date'), []);
+  const fetchSetlists = useCallback(() => Repertorios.list('-created_date'), []);
   const fetchSongs = useCallback(() => base44.fetchAllSongs(), []);
 
   const {
@@ -36,7 +38,24 @@ export default function Setlists() {
     isOffline,
     isSyncing,
     isLoading,
+    reload: reloadSetlists,
   } = useOfflineSync("setlists", fetchSetlists);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const isAdmin = currentUser?.role === 'admin';
+
+  // Repertório recebido por link (?r=...): oferece guardar nos meus repertórios
+  useEffect(() => {
+    const recebido = lerRepertorioDoLink();
+    if (!recebido) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    if (confirm(`Você recebeu o repertório "${recebido.name}" (${recebido.songs.length} músicas).\n\nGuardar nos seus repertórios?`)) {
+      Repertorios.create(recebido).then(() => reloadSetlists()).catch((e) => alert(e.message || 'Não foi possível guardar o repertório.'));
+    }
+  }, [reloadSetlists]);
 
   const { data: songs } = useOfflineSync("songs", fetchSongs);
 
@@ -50,7 +69,7 @@ export default function Setlists() {
     setCacheOk(false);
     try {
       const [freshSetlists, freshSongs] = await Promise.all([
-        base44.entities.Setlist.list('-created_date'),
+        Repertorios.list('-created_date'),
         base44.fetchAllSongs(),
       ]);
       await Promise.all([
@@ -67,8 +86,9 @@ export default function Setlists() {
   };
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Setlist.delete(id),
+    mutationFn: (id) => Repertorios.delete(id),
     onSuccess: () => {
+      reloadSetlists();
       queryClient.invalidateQueries({ queryKey: ['setlists'] });
     }
   });
@@ -85,6 +105,7 @@ export default function Setlists() {
   };
 
   const handleCloseForm = () => {
+    reloadSetlists();
     setShowForm(false);
     setEditingSetlist(null);
   };
@@ -130,6 +151,7 @@ export default function Setlists() {
               <p className="text-[#A68A64]">Organize suas apresentações e sequências de músicas</p>
             </div>
             <div className="flex gap-2 mt-1">
+              {isAdmin && (
               <Button
                 onClick={() => setActiveTab("ia")}
                 className="bg-gradient-to-r from-purple-600 to-[#8B6F47] hover:from-purple-700 hover:to-[#6B5437] text-white shadow-lg whitespace-nowrap"
@@ -137,6 +159,7 @@ export default function Setlists() {
                 <Sparkles className="w-4 h-4 mr-2" />
                 Gerar por IA
               </Button>
+              )}
               {!isOffline && (
                 <button
                   onClick={handlePrepareOffline}
