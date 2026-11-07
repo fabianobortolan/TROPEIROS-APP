@@ -22,7 +22,8 @@ const MENSAGENS = {
   'User already registered': 'Este e-mail já tem cadastro. Use "Entrar" ou "Esqueci minha senha".',
   'Password should be at least 6 characters.': 'A senha precisa ter pelo menos 6 caracteres.',
 };
-const traduz = (msg) => MENSAGENS[msg] || (/rate limit/i.test(msg) ? 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.' : msg);
+const NAO_AUTORIZADO = 'Este e-mail ainda não está autorizado a entrar no app. A biblioteca continua aberta a todos; para ter acesso completo, peça liberação ao administrador dos Tropeiros.';
+const traduz = (msg) => (/database error saving new user|cadastro_nao_autorizado/i.test(msg || '') ? NAO_AUTORIZADO : null) || MENSAGENS[msg] || (/rate limit/i.test(msg) ? 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.' : msg);
 
 export default function Login() {
   const params = new URLSearchParams(window.location.search);
@@ -33,6 +34,13 @@ export default function Login() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
+
+  // Erro devolvido na volta do Google ou de um link de e-mail (vem no endereço)
+  useEffect(() => {
+    const h = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const msg = params.get('error_description') || h.get('error_description');
+    if (msg) setErro(traduz(msg.replace(/\+/g, ' ')));
+  }, []);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -152,6 +160,7 @@ export default function Login() {
             </div>
           )}
 
+          {modo === 'criar' && <p className="text-xs text-stone-500">O cadastro é liberado só para e-mails autorizados pelos Tropeiros.</p>}
           {erro && <p className="text-sm text-red-700 bg-red-50 rounded-md p-2">{erro}</p>}
           {aviso && <p className="text-sm text-green-800 bg-green-50 rounded-md p-2">{aviso}</p>}
 
