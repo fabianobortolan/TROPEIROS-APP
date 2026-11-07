@@ -5,7 +5,7 @@ function escapeHtml(text) {
   return (text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-const LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png";
+const LOGO_URL = "/img/522fde112_LOGO-PNG.png";
 
 const SEASON_YEAR = new Date().getFullYear();
 

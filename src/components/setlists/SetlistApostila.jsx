@@ -333,7 +333,7 @@ Retorne apenas o texto da tablatura, sem explicações.`,
 <body>
 
 <div class="cover">
-  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" class="cover-logo" alt="Logo"/>
+  <img src="/img/522fde112_LOGO-PNG.png" class="cover-logo" alt="Logo"/>
   <div class="cover-title">📚 Apostila do Repertório</div>
   <div class="cover-sub">${escapeHtml(setlist.name)}</div>
   ${setlist.description ? `<div class="cover-meta">${escapeHtml(setlist.description)}</div>` : ""}

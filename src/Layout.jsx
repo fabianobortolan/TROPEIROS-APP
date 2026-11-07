@@ -179,7 +179,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
             <div className="flex justify-center">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png"
+                src="/img/522fde112_LOGO-PNG.png"
                 alt="Tropeiros do Bebedouro Logo"
                 className="w-32 h-32 object-contain opacity-90 drop-shadow-lg rounded-md"
               />

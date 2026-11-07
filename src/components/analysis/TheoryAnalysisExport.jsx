@@ -563,7 +563,7 @@ Gerado por Tropeiros do Bebedouro - ${new Date().toLocaleDateString('pt-BR')}
         </head>
         <body>
           <div class="header">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" class="logo" alt="Logo" />
+            <img src="/img/522fde112_LOGO-PNG.png" class="logo" alt="Logo" />
             <div class="header-text">
               <div class="title">${song?.title || 'Análise Musical'}</div>
               <div class="subtitle">${song?.artist || 'Artista'}</div>
@@ -675,7 +675,7 @@ Gerado por Tropeiros do Bebedouro - ${new Date().toLocaleDateString('pt-BR')}
           </div>
 
           <div class="footer">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" alt="Logo" />
+            <img src="/img/522fde112_LOGO-PNG.png" alt="Logo" />
             <p><strong>Tropeiros do Bebedouro</strong> • Análise Teórica Musical</p>
             <p>Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
           </div>

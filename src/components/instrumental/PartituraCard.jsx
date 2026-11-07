@@ -11,7 +11,7 @@ const difficultyConfig = {
   avancado: { label: "Avançado", className: "bg-rose-100 text-rose-800 border border-rose-200" },
 };
 
-const ROPE_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/bfcd67933_image.png";
+const ROPE_URL = "/img/bfcd67933_image.png";
 
 export default function PartituraCard({ partitura, onEdit, onDelete, isAdmin }) {
   const diff = difficultyConfig[partitura.difficulty_level] || difficultyConfig.intermediario;

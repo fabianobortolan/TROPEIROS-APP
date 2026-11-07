@@ -20,7 +20,7 @@ function escapeHtml(text) {
   return (text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-const APOSTILA_LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png";
+const APOSTILA_LOGO_URL = "/img/522fde112_LOGO-PNG.png";
 
 // Destaca o bloco inteiro de Refrão com uma caixa amarela (cabeçalho + todas as linhas do refrão)
 function boldRefrãoTokens(text) {

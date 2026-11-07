@@ -1507,7 +1507,7 @@ export default function AdvancedHarmonicAnalysis({ progressions, mainKey, song, 
         </head>
         <body>
           <div class="header">
-            <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" class="logo" alt="Logo" />
+            <img src="/img/522fde112_LOGO-PNG.png" class="logo" alt="Logo" />
             <div class="header-text">
               <div class="title">Análise Harmônica Avançada</div>
               <div class="subtitle">${song?.title || 'Música'} - ${song?.artist || 'Artista'} | Tom: ${mainKey || 'N/A'}</div>

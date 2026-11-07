@@ -1,9 +1,9 @@
 // Service Worker - Modo Palco Offline
 // Cache cifras, áudios e assets do app para funcionar sem internet
 
-const APP_CACHE = 'tropeiros-app-v2';
-const SONGS_CACHE = 'tropeiros-songs-v2';
-const AUDIO_CACHE = 'tropeiros-audio-v2';
+const APP_CACHE = 'tropeiros-app-v3';
+const SONGS_CACHE = 'tropeiros-songs-v3';
+const AUDIO_CACHE = 'tropeiros-audio-v3';
 
 // Assets estáticos do app (shell)
 const APP_SHELL = [
@@ -119,18 +119,21 @@ function isAudioRequest(url) {
 }
 
 function isSongDataRequest(url) {
-  // Supabase storage (PDFs, imagens de solo, áudios via storage)
-  if (url.hostname.includes('supabase.co')) return true;
+  // Supabase Storage: só arquivos públicos (PDFs, imagens de solo).
+  // NUNCA o banco (/rest/v1), o login (/auth/v1) ou funções (/functions/v1):
+  // essas respostas dependem do usuário logado e não podem ir para o cache.
+  if (url.hostname.includes('supabase.co')) return url.pathname.startsWith('/storage/v1/object/public/');
   // PDFs e imagens de partitura/solo
   if (/\.(pdf|png|jpg|jpeg|webp|svg)(\?|$)/i.test(url.pathname)) return true;
   return false;
 }
 
 function isApiRequest(url) {
-  // API Base44 e outros endpoints dinâmicos
+  // Endpoints dinâmicos (banco, login, funções do Supabase e APIs em geral)
   return (
+    url.hostname.includes('supabase.co') ||
     url.hostname.includes('base44.com') ||
-    url.hostname.includes('qtrypzzcjebvfcihiynt') === false && url.pathname.startsWith('/api/')
+    url.pathname.startsWith('/api/')
   );
 }
 

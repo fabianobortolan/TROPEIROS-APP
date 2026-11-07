@@ -384,7 +384,7 @@ Música: ${song.title} - ${song.artist}`,
 
   <!-- CABEÇALHO -->
   <div class="header">
-    <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" class="logo" alt="Logo"/>
+    <img src="/img/522fde112_LOGO-PNG.png" class="logo" alt="Logo"/>
     <div class="header-info">
       <div class="song-title${song.genre_style === "samba" ? " genre-samba" : song.genre_style === "forro" ? " genre-forro" : ""}">${song.title}</div>
       <div class="song-artist">${song.artist}</div>

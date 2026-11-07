@@ -584,7 +584,7 @@ export default function Library() {
                     {/* Corda decorativa topo */}
                     <div className="absolute top-0 left-0 right-0 h-[10px] z-10 pointer-events-none"
                       style={{
-                        backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/bfcd67933_image.png')`,
+                        backgroundImage: `url('/img/bfcd67933_image.png')`,
                         backgroundRepeat: 'repeat-x',
                         backgroundSize: 'auto 10px',
                       }}
@@ -592,7 +592,7 @@ export default function Library() {
                     {/* Corda decorativa base */}
                     <div className="absolute bottom-0 left-0 right-0 h-[10px] z-10 pointer-events-none"
                       style={{
-                        backgroundImage: `url('https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/bfcd67933_image.png')`,
+                        backgroundImage: `url('/img/bfcd67933_image.png')`,
                         backgroundRepeat: 'repeat-x',
                         backgroundSize: 'auto 10px',
                       }}

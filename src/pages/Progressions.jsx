@@ -324,7 +324,7 @@ export default function Progressions() {
           <div class="card">
             <div class="header">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" 
+                src="/img/522fde112_LOGO-PNG.png" 
                 alt="Logo"
                 class="logo"
               />
@@ -515,7 +515,7 @@ export default function Progressions() {
         <body>
           <div class="cover">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" 
+              src="/img/522fde112_LOGO-PNG.png" 
               alt="Logo"
               style="width: 120px; height: 120px; margin-bottom: 30px;"
             />

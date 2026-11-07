@@ -48,7 +48,7 @@ export default function Documentation() {
           <div className="flex items-center gap-4 mb-4">
             <div className="w-24 h-24 flex items-center justify-center">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" 
+                src="/img/522fde112_LOGO-PNG.png" 
                 alt="Tropeiros do Bebedouro"
                 className="w-full h-full object-contain drop-shadow-lg"
               />

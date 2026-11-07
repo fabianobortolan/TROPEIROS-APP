@@ -42,7 +42,7 @@ export function buildPrintCifraHtml(song, transposedData, transpose) {
   </head>
   <body>
     <div class="header">
-      <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6900add80614fb22512134a9/522fde112_LOGO-PNG.png" alt="Tropeiros do Bebedouro" class="logo" />
+      <img src="/img/522fde112_LOGO-PNG.png" alt="Tropeiros do Bebedouro" class="logo" />
       <div class="header-text">
         <div class="title-row">
           <span class="title">${song.title}</span>
