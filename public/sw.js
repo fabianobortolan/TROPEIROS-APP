@@ -1,9 +1,9 @@
 // Service Worker - Modo Palco Offline
 // Cache cifras, áudios e assets do app para funcionar sem internet
 
-const APP_CACHE = 'tropeiros-app-v3';
-const SONGS_CACHE = 'tropeiros-songs-v3';
-const AUDIO_CACHE = 'tropeiros-audio-v3';
+const APP_CACHE = 'tropeiros-app-v4';
+const SONGS_CACHE = 'tropeiros-songs-v4';
+const AUDIO_CACHE = 'tropeiros-audio-v4';
 
 // Assets estáticos do app (shell)
 const APP_SHELL = [
@@ -69,10 +69,17 @@ self.addEventListener('fetch', (event) => {
 
   // 5. Navegação (HTML) → Network First com fallback para index.html (SPA)
   if (request.mode === 'navigate') {
+    // Guarda sempre a versão mais nova da página, para abrir sem internet
     event.respondWith(
-      fetch(request).catch(() =>
-        caches.match('/index.html')
-      )
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const copia = response.clone();
+            caches.open(APP_CACHE).then((cache) => cache.put('/index.html', copia));
+          }
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }

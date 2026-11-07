@@ -12,6 +12,7 @@
 // registro de volta ao formato do Base44: { ...data, id, created_date, ... }.
 // ============================================================================
 import { createClient } from '@supabase/supabase-js';
+import { comCopiaLocal, semInternet } from './cacheOffline';
 
 // Valores PÚBLICOS do projeto Supabase (podem ir para o navegador; a segurança
 // fica nas regras de acesso do banco). Podem ser trocados por variáveis de ambiente.
@@ -259,25 +260,28 @@ function chunk(arr, size) {
 function createEntityHandler(entityName) {
   const table = tableOf(entityName);
   return {
+    // Leituras guardam uma cópia local; sem internet, devolvem a última cópia
     async list(...args) {
       const [sort, limit, skip, fields] = args;
-      return isPageOptions(sort)
+      return comCopiaLocal(`${table}|list|${JSON.stringify(args)}`, () => (isPageOptions(sort)
         ? readPage(table, sort)
-        : readArray(table, { sort, limit, skip, fields });
+        : readArray(table, { sort, limit, skip, fields })));
     },
 
     async filter(query, ...args) {
       const [sort, limit, skip, fields] = args;
-      return isPageOptions(sort)
+      return comCopiaLocal(`${table}|filter|${JSON.stringify([query, ...args])}`, () => (isPageOptions(sort)
         ? readPage(table, sort, query)
-        : readArray(table, { query, sort, limit, skip, fields });
+        : readArray(table, { query, sort, limit, skip, fields })));
     },
 
     async get(id) {
-      const { data, error } = await supabase.from(table).select(SELECT_ALL).eq('id', id).maybeSingle();
-      if (error) raise(error, `Erro ao ler ${entityName}`);
-      if (!data) throw new Base44Error(`${entityName} ${id} não encontrado`, 404);
-      return flatten(data);
+      return comCopiaLocal(`${table}|get|${id}`, async () => {
+        const { data, error } = await supabase.from(table).select(SELECT_ALL).eq('id', id).maybeSingle();
+        if (error) raise(error, `Erro ao ler ${entityName}`);
+        if (!data) throw new Base44Error(`${entityName} ${id} não encontrado`, 404);
+        return flatten(data);
+      });
     },
 
     async create(record) {
@@ -429,9 +433,21 @@ const auth = {
   async me() {
     const session = await currentSession();
     if (!session) throw new Base44Error('Autenticação necessária', 401);
-    const p = await readProfile(session.user.id);
+    const CHAVE_PERFIL = `tropeiros_perfil_${session.user.id}`;
+    let p;
+    try {
+      p = await readProfile(session.user.id);
+    } catch (e) {
+      // Sem internet: usa o último perfil conhecido deste aparelho
+      if (semInternet(e)) {
+        try { const salvo = JSON.parse(localStorage.getItem(CHAVE_PERFIL) || 'null'); if (salvo) return salvo; } catch { /* ignora */ }
+      }
+      throw e;
+    }
     if (!p) throw new Base44Error('Usuário sem perfil cadastrado', 403, { extra_data: { reason: 'user_not_registered' } });
-    return flattenProfile(p);
+    const perfil = flattenProfile(p);
+    try { localStorage.setItem(CHAVE_PERFIL, JSON.stringify(perfil)); } catch { /* ignora */ }
+    return perfil;
   },
   async updateMe(patch) {
     const session = await currentSession();
@@ -445,6 +461,7 @@ const auth = {
     goToLogin(nextUrl);
   },
   async logout(redirectUrl) {
+    try { Object.keys(localStorage).filter((k) => k.startsWith('tropeiros_perfil_')).forEach((k) => localStorage.removeItem(k)); } catch { /* ignora */ }
     await supabase.auth.signOut();
     goToLogin(redirectUrl || '/');
   },
