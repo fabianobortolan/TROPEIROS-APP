@@ -301,6 +301,15 @@ export default function Layout({ children, currentPageName }) {
               <span>Entrar</span>
             </Link>
             ) : (
+            <>
+            <Link
+              to="/login?modo=nova-senha"
+              onClick={handleNavClick}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 mb-2 rounded-xl border border-[#D4C5B0] text-[#8B6F47] hover:bg-amber-100 text-sm font-medium transition-all duration-200"
+            >
+              <User className="w-4 h-4" />
+              <span>Criar / trocar minha senha</span>
+            </Link>
             <button
               type="button"
               onClick={() => base44.auth.logout()}
@@ -309,6 +318,7 @@ export default function Layout({ children, currentPageName }) {
               <LogOut className="w-4 h-4" />
               <span>Sair do Sistema</span>
             </button>
+            </>
             )}
           </div>
         </div>
