@@ -27,3 +27,8 @@ do Base44, mas por dentro fala com o Supabase.
 - Portar as 9 funções do Base44 (`base44/functions/`) para Edge Functions.
 - Configurar no Supabase (Authentication → URL Configuration) o endereço onde o app for publicado,
   para os links de e-mail (entrar sem senha, recuperar senha) voltarem ao lugar certo.
+
+## Publicação
+- Endereço: https://tropeirosbebedouro.netlify.app
+- O Netlify está ligado a este repositório (ramo `main`): cada alteração gravada aqui é montada
+  (`npm run build`) e publicada automaticamente em 1–2 minutos, conforme o `netlify.toml`.
