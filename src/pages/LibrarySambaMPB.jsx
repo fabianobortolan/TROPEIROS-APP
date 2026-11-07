@@ -191,6 +191,8 @@ export default function LibrarySambaMPB() {
                   </button>
                 </Link>
               )}
+              {/* Ferramentas só para quem entrou no app (visitante vê só a lista de músicas) */}
+              {currentUser && (<>
               <button
                 onClick={() => setShowLibraryApostila(true)}
                 className="flex-1 h-10 text-xs md:text-sm font-bold rounded-xl flex items-center justify-center gap-1 text-white shadow-lg transition-all"
@@ -213,6 +215,7 @@ export default function LibrarySambaMPB() {
               >
                 Cadernos
               </button>
+              </>)}
             </div>
           </div>
         </motion.div>

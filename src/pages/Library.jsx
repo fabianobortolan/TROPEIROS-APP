@@ -366,6 +366,8 @@ export default function Library() {
                   <span>Enriquecer</span>
                 </button>
               )}
+              {/* Ferramentas só para quem entrou no app (visitante vê só a lista de músicas) */}
+              {currentUser && (<>
               <button
                 onClick={() => setShowHarmonicAnalyzer(true)}
                 style={{ flex: 1 }}
@@ -392,6 +394,7 @@ export default function Library() {
                 className={`h-10 rounded-xl text-xs md:text-sm font-semibold transition-all ${activeTab === 'cadernos' ? 'bg-[#8B6F47] text-white shadow' : 'bg-[#E8DCC4] text-[#A68A64] hover:text-[#8B6F47]'}`}>
                 Cadernos de Cifras
               </button>
+              </>)}
             </div>
 
 

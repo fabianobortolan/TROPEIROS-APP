@@ -249,6 +249,8 @@ export default function LibraryPopRock() {
                   <span>Recalcular</span>
                 </button>
               )}
+              {/* Ferramentas só para quem entrou no app (visitante vê só a lista de músicas) */}
+              {currentUser && (<>
               <button onClick={() => setShowLibraryApostila(true)}
                 className="flex-1 h-10 text-xs md:text-sm font-bold rounded-xl flex items-center justify-center gap-1 text-white shadow-lg transition-all"
                 style={{ background: 'linear-gradient(90deg, #8B6F47, #D4AF37)' }}>
@@ -265,6 +267,7 @@ export default function LibraryPopRock() {
                 style={activeTab === 'cadernos' ? { background: 'linear-gradient(90deg, #f97316, #d97706)' } : {}}>
                 Cadernos
               </button>
+              </>)}
             </div>
           </div>
         </motion.div>
