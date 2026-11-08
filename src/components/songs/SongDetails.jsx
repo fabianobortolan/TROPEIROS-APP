@@ -47,7 +47,7 @@ import {
   parseKey,
 } from "@/utils/transposition";
 
-export default function SongDetails({ song: initialSong, onClose, initialTab = "cifra" }) {
+export default function SongDetails({ song: initialSong, onClose, initialTab = "cifra", onEditandoChange }) {
   const [song, setSong] = React.useState(initialSong);
 
   // Sincroniza se o prop externo mudar (ex: outro componente atualiza)
@@ -64,6 +64,7 @@ export default function SongDetails({ song: initialSong, onClose, initialTab = "
   const [isEditing, setIsEditing] = useState(false);
   const [palcoAberto, setPalcoAberto] = useState(false);
   const [isEditingProgressions, setIsEditingProgressions] = useState(false);
+  useEffect(() => { onEditandoChange?.(isEditing || isEditingProgressions); }, [isEditing, isEditingProgressions, onEditandoChange]);
   const [progressions, setProgressions] = useState([]);
   const [semitones, setSemitones] = useState(0);
   const [isSaving, setIsSaving] = useState(false);

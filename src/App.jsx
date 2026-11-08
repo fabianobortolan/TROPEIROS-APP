@@ -22,6 +22,7 @@ import HarmonicEarTraining from './pages/HarmonicEarTraining';
 import LibraryInstrumental from './pages/LibraryInstrumental';
 import LibrarySambaMPB from './pages/LibrarySambaMPB';
 import AuditoriaCifras from './pages/AuditoriaCifras';
+import MusicasParaTratar from './pages/MusicasParaTratar';
 import VincularMusicaAula from './pages/VincularMusicaAula';
 import ImportarTablaturas from './pages/ImportarTablaturas';
 
@@ -136,6 +137,14 @@ const AuthenticatedApp = () => {
           element={
             <LayoutWrapper currentPageName="AdminPanel">
               <AdminPanel />
+            </LayoutWrapper>
+          } 
+        />
+        <Route 
+          path="/MusicasParaTratar" 
+          element={
+            <LayoutWrapper currentPageName="MusicasParaTratar">
+              <MusicasParaTratar />
             </LayoutWrapper>
           } 
         />

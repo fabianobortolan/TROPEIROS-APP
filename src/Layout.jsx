@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   Music2, Upload, Waves, ListMusic, Download, Music, Guitar, Palette, BarChart3, FileText, BookOpen, Target,
-  LogOut, Piano, GraduationCap, GitBranch, ChevronDown, Timer, User, X, BookMarked, ShieldAlert, ShieldCheck,
+  LogOut, Piano, GraduationCap, GitBranch, ChevronDown, Timer, User, X, BookMarked, ShieldAlert, ShieldCheck, ListChecks,
   LayoutDashboard, Zap, Ear, Link2, Menu as MenuIcon, MoreHorizontal, Grid3x3, KeyRound,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -59,6 +59,7 @@ const GRUPOS = [
     nome: "Administração", adminOnly: true,
     itens: [
       { title: "Painel Admin", url: "/AdminPanel", icon: ShieldAlert },
+      { title: "Músicas para tratar", url: "/MusicasParaTratar", icon: ListChecks },
       { title: "Auditoria Geral", url: "/AuditoriaCifras", icon: ShieldCheck },
       { title: "Importar Tablaturas", url: "/ImportarTablaturas", icon: Upload },
       { title: "Relatórios", url: createPageUrl("Reports"), icon: BarChart3 },
