@@ -49,10 +49,20 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
   const [global, setGlobal] = useState(() => lerJSON("palco:global", { tema: "escuro", nomesPT: false, espera: ESPERA_PADRAO }));
   const [nivelSimpl, setNivelSimpl] = useState(lerNivelSimplificacao);
   const mudarNivelSimpl = (v) => { setNivelSimpl(v); gravarNivelSimplificacao(v); };
-  const prefsPadrao = useCallback((s) => ({
-    vel: velInicial(s), fonte: null, semitons: 0,
-  }), []);
-  const [prefs, setPrefs] = useState(() => lerJSON(`palco:${song?.id}`, prefsPadrao(song)));
+  // Velocidades gravadas nesta sessão (a lista que abriu o palco pode estar desatualizada)
+  const velGravadaRef = useRef({});
+  // Preferências da música: o que foi ajustado neste aparelho; a velocidade gravada
+  // na música vale se for mais nova (ajustada em outro aparelho pelo administrador)
+  const prefsPadrao = useCallback((s) => {
+    const base = { vel: velInicial(s), fonte: null, semitons: 0 };
+    const loc = lerJSON(`palco:${s?.id}`, {});
+    const p = { ...base, ...loc };
+    const naMusica = s?.updated_date ? Date.parse(s.updated_date) : 0;
+    if (loc.vel != null && loc.velEm && naMusica > loc.velEm + 5000) p.vel = base.vel;
+    if (s?.id && velGravadaRef.current[s.id] != null) p.vel = velGravadaRef.current[s.id];
+    return p;
+  }, []);
+  const [prefs, setPrefs] = useState(() => prefsPadrao(song));
 
   const [rolando, setRolando] = useState(false);
   const [contagem, setContagem] = useState(0);
@@ -78,7 +88,7 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
 
   // Troca de música: carrega as preferências dela, volta ao topo, para a rolagem
   useEffect(() => {
-    setPrefs(lerJSON(`palco:${song?.id}`, prefsPadrao(song)));
+    setPrefs(prefsPadrao(song));
     setRolando(false);
     setContagem(0);
     acumuladoRef.current = 0;
@@ -102,12 +112,27 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
   });
   const mudarGlobal = (patch) => setGlobal((g) => { const novo = { ...g, ...patch }; gravarJSON("palco:global", novo); return novo; });
 
-  // Administrador: a velocidade escolhida vira a padrão da música (como antes)
-  useEffect(() => {
-    if (!isAdmin || !song?.id || prefs.vel === velInicial(song)) return;
-    const id = setTimeout(() => { base44.entities.Song.update(song.id, { scroll_speed: prefs.vel }).catch(() => {}); }, 2000);
-    return () => clearTimeout(id);
-  }, [isAdmin, song?.id, song?.scroll_speed, prefs.vel]);
+  // Velocidade ajustada fica gravada NA MÚSICA (administrador) para as próximas apresentações.
+  // Grava 1,5 s depois do último ajuste, e na hora ao trocar de música ou sair do palco.
+  const pendenteRef = useRef(null);
+  const timerVelRef = useRef(null);
+  const isAdminRef = useRef(false);
+  useEffect(() => { isAdminRef.current = isAdmin; }, [isAdmin]);
+  const gravarVelocidade = useCallback(() => {
+    clearTimeout(timerVelRef.current);
+    const p = pendenteRef.current;
+    pendenteRef.current = null;
+    if (!p || !isAdminRef.current) return;
+    velGravadaRef.current[p.id] = p.vel;
+    base44.entities.Song.update(p.id, { scroll_speed: p.vel }).catch(() => {});
+  }, []);
+  useEffect(() => () => gravarVelocidade(), [song?.id, gravarVelocidade]); // trocou de música ou saiu
+  const marcarVelocidade = (vel) => {
+    if (!song?.id) return;
+    pendenteRef.current = { id: song.id, vel };
+    clearTimeout(timerVelRef.current);
+    timerVelRef.current = setTimeout(gravarVelocidade, 1500);
+  };
 
   // Cifra pronta para exibir (tom, nomes em português)
   const tomBase = song?.main_key || song?.original_key || "";
@@ -231,7 +256,11 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
     if (!area) return;
     area.scrollBy({ top: dir * area.clientHeight * 0.85, behavior: "smooth" });
   }, []);
-  const velocidade = (d) => mudarPrefs({ vel: Math.min(VEL_MAX, Math.max(VEL_MIN, prefs.vel + d * VEL_PASSO)) });
+  const velocidade = (d) => {
+    const vel = Math.min(VEL_MAX, Math.max(VEL_MIN, prefs.vel + d * VEL_PASSO));
+    mudarPrefs({ vel, velEm: Date.now() });
+    marcarVelocidade(vel);
+  };
   const tamanho = (d) => mudarPrefs({ fonte: Math.min(FONTE_MAX, Math.max(FONTE_MIN, Math.round((fonte + d) * 2) / 2)) });
 
   // Pedal bluetooth e teclado
