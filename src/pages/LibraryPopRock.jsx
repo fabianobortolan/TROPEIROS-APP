@@ -20,7 +20,6 @@ import ApostilaPDF from "../components/songs/ApostilaPDF";
 import CompareAnalyses from "../components/analysis/CompareAnalyses";
 import SimilarityAnalysis from "../components/analysis/SimilarityAnalysis";
 import PalcoView from "../components/palco/PalcoView";
-import CadernosManager from "../components/cadernos/CadernosManager";
 import SongInfoModal from "../components/songs/SongInfoModal";
 import LibraryApostila from "../components/songs/LibraryApostila";
 
@@ -222,14 +221,11 @@ export default function LibraryPopRock() {
             logado={!!currentUser}
             isAdmin={currentUser?.role === 'admin'}
             onApostila={() => setShowLibraryApostila(true)}
-            abas={{ atual: activeTab === 'cadernos' ? 'cadernos' : 'biblioteca', mudar: setActiveTab }}
             ferramentas={[{ label: recalculating ? 'Recalculando…' : 'Recalcular progressões', icon: TrendingUp, onClick: recalculatePredominant, disabled: recalculating, adminOnly: true }]}
           />
         </motion.div>
 
-        {activeTab === 'cadernos' ? (
-          <CadernosManager onImportSong={handleImportFromCaderno} />
-        ) : (
+        {false ? null : (
           <>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="rounded-xl md:rounded-2xl p-3 md:p-6 mb-4 md:mb-8 border border-orange-500/30 shadow-xl"

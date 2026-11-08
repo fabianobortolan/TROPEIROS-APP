@@ -1174,18 +1174,12 @@ EXECUTE A ANÁLISE AGORA.`;
                   )}
 
                   {/* Botões de navegação rápida */}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => navigate(createPageUrl("Library"))}
                       className="h-10 w-full text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 bg-gradient-to-r from-[#8B6F47] to-[#A68A64] text-white shadow-md transition-all hover:from-[#A68A64] hover:to-[#8B6F47]">
                       <Music className="w-4 h-4 flex-shrink-0" />
                       <span>Biblioteca</span>
-                    </button>
-                    <button
-                      onClick={() => navigate(createPageUrl("Library") + "?tab=cadernos")}
-                      className="h-10 w-full text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 bg-gradient-to-r from-[#8B6F47] to-[#A68A64] text-white shadow-md transition-all hover:from-[#A68A64] hover:to-[#8B6F47]">
-                      <FileText className="w-4 h-4 flex-shrink-0" />
-                      <span>Cadernos</span>
                     </button>
                     <button
                       onClick={() => setShowBuscarCifra(true)}
