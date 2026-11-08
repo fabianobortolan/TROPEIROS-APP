@@ -28,7 +28,6 @@ import SimilarityAnalysis from "../components/analysis/SimilarityAnalysis";
 
 
 import PalcoView from "../components/palco/PalcoView";
-import CadernosManager from "../components/cadernos/CadernosManager";
 import HarmonicSetlistAnalyzer from "../components/analysis/HarmonicSetlistAnalyzer";
 import EditChordsModal from "../components/songs/EditChordsModal";
 import SongRow from "../components/songs/SongRow";
@@ -328,7 +327,6 @@ export default function Library() {
             logado={!!currentUser}
             isAdmin={currentUser?.role === 'admin'}
             onApostila={() => setShowLibraryApostila(true)}
-            abas={{ atual: activeTab === 'cadernos' ? 'cadernos' : 'biblioteca', mudar: setActiveTab }}
             ferramentas={[
               { label: 'Compatibilidade de repertório', icon: ListMusic, onClick: () => setShowHarmonicAnalyzer(true) },
               { label: recalculating ? 'Recalculando…' : 'Recalcular progressões', icon: TrendingUp, onClick: recalculatePredominant, disabled: recalculating, adminOnly: true },
@@ -338,9 +336,7 @@ export default function Library() {
           <OfflineBanner isOffline={isOffline} isSyncing={isSyncing} pendingCount={0} />
         </motion.div>
 
-        {activeTab === 'cadernos' ? (
-          <CadernosManager onImportSong={handleImportFromCaderno} />
-        ) : (
+        {false ? null : (
           <>
 
         <motion.div

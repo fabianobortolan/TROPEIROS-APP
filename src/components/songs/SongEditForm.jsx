@@ -16,6 +16,7 @@ export default function SongEditForm({ song, onClose }) {
   const queryClient = useQueryClient();
   const cifraTextareaRef = useRef(null);
 
+  const [playbackPesadoMB, setPlaybackPesadoMB] = useState(null);
   // Autocompletar de artistas (valores já usados na biblioteca)
   const [artistOptions, setArtistOptions] = useState([]);
   useEffect(() => {
@@ -159,6 +160,7 @@ export default function SongEditForm({ song, onClose }) {
     };
 
     const detectedBPM = extractBPMFromFilename(file.name);
+    setPlaybackPesadoMB(file.size > 4 * 1024 * 1024 ? (file.size / 1048576).toFixed(1) : null);
 
     setUploadingPlayback(true);
     try {
@@ -628,6 +630,11 @@ ${formData.main_key ? `    <p style="margin: 2pt 0;"><strong>Tom:</strong> ${esc
                     <div className="flex-1">
                       <p className="text-sm font-medium text-[#8B6F47]">✅ Playback anexado</p>
                       <audio controls src={formData.playback_url} className="w-full mt-2 h-10" />
+                      {playbackPesadoMB && (
+                        <p className="text-xs text-[#B45309] mt-1">
+                          Arquivo pesado ({playbackPesadoMB} MB). Funciona normal, mas depois peça ao Claude para converter os playbacks novos e deixá-lo mais leve.
+                        </p>
+                      )}
                     </div>
                     <Button
                       type="button"

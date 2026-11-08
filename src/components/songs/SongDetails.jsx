@@ -57,7 +57,7 @@ export default function SongDetails({ song: initialSong, onClose, initialTab = "
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState(() => {
-    const hasTab = !!parseSoloTab(initialSong.solo_tab);
+    const hasTab = !!parseSoloTab(initialSong.solo_tab) || !!initialSong.playback_url;
     if (initialTab === 'tocarjunto' && !hasTab) return 'cifra';
     return initialTab || 'cifra';
   });
@@ -633,7 +633,7 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
   const isAdmin = currentUser?.role === 'admin';
   const tabs = [
     { id: 'cifra', label: 'Cifra' },
-    ...(hasSoloTab || isAdmin ? [{ id: 'tocarjunto', label: 'Tocar junto' }] : []),
+    ...(hasSoloTab || song.playback_url || isAdmin ? [{ id: 'tocarjunto', label: 'Tocar junto' }] : []),
     { id: 'notes', label: 'Análise harmônica' },
     { id: 'progressions', label: 'Progressões' },
     { id: 'theory', label: 'Teoria' },
@@ -703,7 +703,7 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
                 >
                   <MonitorPlay className="w-5 h-5" /> Modo palco
                 </button>
-                {hasSoloTab && (
+                {(hasSoloTab || song.playback_url) && (
                   <button
                     type="button"
                     onClick={() => setActiveTab('tocarjunto')}
@@ -1134,7 +1134,12 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
-                          <p className="text-xs text-[#A68A64]">Use o playback para praticar no ritmo correto</p>
+                          <p className="text-xs text-[#A68A64]">
+                            Use o playback para praticar no ritmo correto
+                            {isAdmin && !song.playback_url.includes('/arquivos/playbacks/') && (
+                              <span className="block text-[#B45309] font-medium mt-0.5">Playback ainda não otimizado — peça ao Claude para converter os playbacks novos.</span>
+                            )}
+                          </p>
                           <a href={song.playback_url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#8B6F47] hover:text-[#A68A64] flex items-center gap-1">
                             <ExternalLink className="w-3 h-3" />Abrir em nova aba
                           </a>

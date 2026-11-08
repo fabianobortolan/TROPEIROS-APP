@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  X, Play, Pause, ChevronLeft, ChevronRight, Minus, Plus, Settings2, Maximize, Minimize, ArrowUpToLine,
+  X, Play, Pause, ChevronLeft, ChevronRight, Minus, Plus, Settings2, Maximize, Minimize, ArrowUpToLine, Headphones,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isChordLine, transposeCifraText, transposeKey, preferFlatsForKey } from "@/utils/transposition";
@@ -15,7 +15,7 @@ import { quebrarCifra } from "./cifraPalco";
 // • Letra ajustada à largura da tela (acordes não desalinham); A−/A+ para ajustar.
 // • Tom − / + na hora. Tela não apaga. Tema escuro, claro ou alto contraste.
 // • Pedal bluetooth / teclado: ↓ PgDn Espaço = desce uma tela; ↑ PgUp = sobe;
-//   → próxima música; ← anterior; Enter ou P = rolar/pausar; Esc = sair.
+//   → próxima música; ← anterior; Enter ou P = rolar/pausar; B = playback; Esc = sair.
 // • Toque no meio da tela mostra/esconde os controles; deslize para os lados
 //   troca de música.
 // ---------------------------------------------------------------------------
@@ -64,6 +64,9 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
   const acumuladoRef = useRef(0);
   const esconderRef = useRef(null);
   const toqueRef = useRef(null);
+  const baseRef = useRef(null);
+  const [baseTocando, setBaseTocando] = useState(false);
+  const [baseCarregando, setBaseCarregando] = useState(false);
 
   const t = TEMAS[global.tema] || TEMAS.escuro;
 
@@ -76,7 +79,17 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
     setContagem(0);
     acumuladoRef.current = 0;
     if (areaRef.current) areaRef.current.scrollTop = 0;
+    if (baseRef.current) { baseRef.current.pause(); baseRef.current.currentTime = 0; }
+    setBaseTocando(false);
   }, [song?.id, prefsPadrao]);
+
+  // Playback (base) da música
+  const alternarBase = async () => {
+    const a = baseRef.current;
+    if (!a) return;
+    if (!a.paused) { a.pause(); return; }
+    try { setBaseCarregando(true); await a.play(); } catch { /* bloqueado ou sem rede */ } finally { setBaseCarregando(false); }
+  };
 
   const mudarPrefs = (patch) => setPrefs((p) => {
     const novo = { ...p, ...patch };
@@ -222,6 +235,7 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
         case "ArrowRight": e.preventDefault(); irPara(indice + 1); break;
         case "ArrowLeft": e.preventDefault(); irPara(indice - 1); break;
         case "Enter": case "p": case "P": e.preventDefault(); alternarRolagem(); break;
+        case "b": case "B": e.preventDefault(); alternarBase(); break;
         case "+": case "=": velocidade(1); break;
         case "-": velocidade(-1); break;
         case "Escape": if (!document.fullscreenElement) onClose?.(); break;
@@ -291,10 +305,33 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
             Tom {tomAtual}
           </div>
         )}
+        {song.playback_url && (
+          <button
+            type="button"
+            onClick={alternarBase}
+            aria-label={baseTocando ? "Pausar playback" : "Tocar playback"}
+            className="flex-shrink-0 h-9 px-2.5 flex items-center gap-1.5 rounded-lg text-sm font-bold"
+            style={baseTocando ? { background: t.acorde, color: t.fundo } : { background: t.botao, color: t.texto }}
+          >
+            {baseTocando ? <Pause className="w-4 h-4" fill="currentColor" /> : <Headphones className="w-4 h-4" />}
+            <span>{baseCarregando ? "…" : "Base"}</span>
+          </button>
+        )}
         <button type="button" onClick={() => setAjustes(true)} aria-label="Ajustes" className="w-12 h-12 flex items-center justify-center rounded-xl flex-shrink-0">
           <Settings2 className="w-6 h-6" />
         </button>
       </div>
+
+      {song.playback_url && (
+        <audio
+          ref={baseRef}
+          src={song.playback_url}
+          preload="none"
+          onPlay={() => setBaseTocando(true)}
+          onPause={() => setBaseTocando(false)}
+          onEnded={() => setBaseTocando(false)}
+        />
+      )}
 
       {/* Cifra */}
       <div
