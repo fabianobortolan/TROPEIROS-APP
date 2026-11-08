@@ -153,6 +153,9 @@ export function isChordLine(line) {
   if (tokens.length === 0) return false;
   let chordCount = 0;
   for (const tok of tokens) {
+    // Primeiro testa o token como está: "Am7(9)" termina em ")" e é acorde válido.
+    // Só depois tenta sem pontuação em volta ("(C)", "G," etc.).
+    if (CHORD_TOKEN_RE.test(tok)) { chordCount++; continue; }
     const t = tok.replace(/^[([{<]+|[)\]}>,.;:]+$/g, '');
     if (!t) continue;
     if (t === '%') { chordCount++; continue; } // repetição do acorde anterior

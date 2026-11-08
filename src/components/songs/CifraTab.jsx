@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Save, X, FileText, Loader2, Printer, Download, MessageCircle, CaseUpper, ArrowUpDown, MoreVertical } from "lucide-react";
+import { Edit, Save, X, FileText, Loader2, Printer, Download, MessageCircle, CaseUpper, ArrowUpDown, MoreVertical, Wand2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ClickableChordsCifra from "./ClickableChordsCifra";
 import TranspositorCifra from "./TranspositorCifra";
 import CifraWithComments from "./CifraWithComments";
 import { uppercaseSelection } from "@/utils/textCaseUtils";
+import { simplificarCifra, NIVEIS_SIMPLIFICACAO, lerNivelSimplificacao, gravarNivelSimplificacao } from "@/utils/simplificarAcordes";
 
 export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveComments, isAdmin = false, highlightLine = null }) {
   const [mostrarTom, setMostrarTom] = React.useState(false);
@@ -16,6 +17,9 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
   const [displayText, setDisplayText] = useState(song.cifra_text || "");
   const [isSaving, setIsSaving] = useState(false);
   const [showBalloons, setShowBalloons] = useState(false);
+  const [nivel, setNivel] = useState(lerNivelSimplificacao);
+  const [mostrarSimplificar, setMostrarSimplificar] = useState(false);
+  const mudarNivel = (v) => { setNivel(v); gravarNivelSimplificacao(v); };
   // Controla se o displayText foi modificado localmente (após um save)
   const locallyModified = useRef(false);
   const textareaRef = useRef(null);
@@ -47,7 +51,11 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
   };
 
   // O texto a exibir: se transposto e não há edição local, usa transposedCifra; senão usa displayText
-  const viewText = (!locallyModified.current && transposedCifra) ? transposedCifra : displayText;
+  const textoBase = (!locallyModified.current && transposedCifra) ? transposedCifra : displayText;
+  // Só oferece "Simplificar" se a música tem acordes que mudam
+  const podeSimplificar = useMemo(() => !!textoBase && simplificarCifra(textoBase, "iniciante") !== textoBase, [textoBase]);
+  const viewText = useMemo(() => (nivel && podeSimplificar ? simplificarCifra(textoBase, nivel) : textoBase), [textoBase, nivel, podeSimplificar]);
+  const nomeNivel = NIVEIS_SIMPLIFICACAO.find((x) => x.id === nivel)?.nome;
 
   const handleExportDoc = () => {
     const text = viewText || "";
@@ -146,6 +154,16 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
               <ArrowUpDown className="w-4 h-4" /> Mudar tom
             </button>
           )}
+          {podeSimplificar && (
+            <button
+              type="button"
+              onClick={() => setMostrarSimplificar((v) => !v)}
+              aria-expanded={mostrarSimplificar}
+              className={`h-10 px-3 rounded-xl border text-sm font-semibold flex items-center gap-1.5 ${nivel ? "bg-[#6B8E4E] text-white border-[#6B8E4E]" : mostrarSimplificar ? "bg-[#6B4F2E] text-[#FFFDF8] border-[#6B4F2E]" : "bg-[#FFFDF8] text-[#6B4F2E] border-[#E6DCC8]"}`}
+            >
+              <Wand2 className="w-4 h-4" /> {nivel ? nomeNivel : "Simplificar"}
+            </button>
+          )}
           <div className="flex-1" />
           {isAdmin && (
             <button
@@ -190,6 +208,32 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
             <X className="w-4 h-4 mr-1" />
             Cancelar
           </Button>
+        </div>
+      )}
+
+      {/* Simplificar acordes (só muda a visualização; a cifra gravada continua igual) */}
+      {!isEditing && podeSimplificar && mostrarSimplificar && (
+        <div className="rounded-2xl border border-[#E6DCC8] bg-[#FFFDF8] p-3">
+          <div className="flex gap-1.5">
+            {NIVEIS_SIMPLIFICACAO.map((n) => (
+              <button
+                key={n.id || "orig"}
+                type="button"
+                onClick={() => mudarNivel(n.id)}
+                className={`flex-1 h-10 rounded-xl text-sm font-semibold border ${nivel === n.id ? "bg-[#6B4F2E] text-[#FFFDF8] border-[#6B4F2E]" : "bg-[#FBF6EA] text-[#6B4F2E] border-[#E6DCC8]"}`}
+              >
+                {n.nome}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-[#8B7355] mt-2">
+            {nivel === "iniciante"
+              ? "Só acordes maiores, menores e com 7 (ex.: Am7 vira Am, G7(9) vira G7)."
+              : nivel === "simples"
+                ? "Tira as notas de enfeite (9, 7M, 6, sus, baixo trocado) e mantém o 7 (ex.: C7M vira C, Am7(9) vira Am7)."
+                : "Acordes como estão na cifra."}
+            {" "}Vale para todas as músicas neste aparelho; a cifra original não é alterada.
+          </p>
         </div>
       )}
 

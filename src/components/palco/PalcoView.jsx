@@ -3,10 +3,11 @@ import {
   X, Play, Pause, ChevronLeft, ChevronRight, Minus, Plus, Settings2, Maximize, Minimize, ArrowUpToLine, Headphones,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { isChordLine, transposeCifraText, transposeKey, preferFlatsForKey } from "@/utils/transposition";
-import { translateCifraText, cifraToUpperCase } from "@/components/utils/chordTranslator";
+import { isChordLine, chordStartIndex, transposeCifraText, transposeKey, preferFlatsForKey } from "@/utils/transposition";
+import { translateCifraText } from "@/components/utils/chordTranslator";
 import { tituloLegivel } from "@/components/songs/SongRow";
 import { quebrarCifra } from "./cifraPalco";
+import { simplificarCifra, NIVEIS_SIMPLIFICACAO, lerNivelSimplificacao, gravarNivelSimplificacao } from "@/utils/simplificarAcordes";
 
 // ---------------------------------------------------------------------------
 // MODO PALCO — uma tela só para tocar ao vivo.
@@ -45,6 +46,8 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
   const song = lista[indice];
 
   const [global, setGlobal] = useState(() => lerJSON("palco:global", { tema: "escuro", nomesPT: false }));
+  const [nivelSimpl, setNivelSimpl] = useState(lerNivelSimplificacao);
+  const mudarNivelSimpl = (v) => { setNivelSimpl(v); gravarNivelSimplificacao(v); };
   const prefsPadrao = useCallback((s) => ({
     vel: velInicial(s), fonte: null, semitons: 0, espera: 0,
   }), []);
@@ -111,9 +114,16 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
   const linhas = useMemo(() => {
     let texto = song?.cifra_text || "";
     if (prefs.semitons) texto = transposeCifraText(texto, prefs.semitons, usarBemois);
-    texto = cifraToUpperCase(global.nomesPT ? translateCifraText(texto) : texto);
+    if (nivelSimpl) texto = simplificarCifra(texto, nivelSimpl);
+    // Letra em maiúsculas; linhas de acorde ficam como estão (senão "Bb" virava "BB")
+    texto = texto.split("\n").map((l) => {
+      if (!isChordLine(l)) return l.toUpperCase();
+      const ini = chordStartIndex(l);
+      return ini ? l.slice(0, ini).toUpperCase() + l.slice(ini) : l;
+    }).join("\n");
+    if (global.nomesPT) texto = translateCifraText(texto);
     return texto.replace(/\r/g, "").replace(/\t/g, "    ").split("\n");
-  }, [song?.cifra_text, prefs.semitons, usarBemois, global.nomesPT]);
+  }, [song?.cifra_text, prefs.semitons, usarBemois, global.nomesPT, nivelSimpl]);
   const tomAtual = tomBase ? transposeKey(tomBase, prefs.semitons, usarBemois) : "";
 
   // Tamanho que faz a linha mais longa caber na largura (fonte monoespaçada ≈ 0,6 em por letra)
@@ -461,6 +471,24 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
               <Passo onMenos={() => mudarPrefs({ semitons: prefs.semitons - 1 })} onMais={() => mudarPrefs({ semitons: prefs.semitons + 1 })} estilo={botao} />
               {prefs.semitons !== 0 && <button type="button" onClick={() => mudarPrefs({ semitons: 0 })} className="h-11 px-3 rounded-xl text-sm" style={botao}>Original</button>}
             </Linha>
+
+            <div>
+              <div className="font-semibold">Acordes</div>
+              <div className="text-sm opacity-70 mb-2">Simplificar tira as notas de enfeite (9, 7M, 6…); a cifra original não muda.</div>
+              <div className="flex gap-1.5">
+                {NIVEIS_SIMPLIFICACAO.map((n) => (
+                  <button
+                    key={n.id || "orig"}
+                    type="button"
+                    onClick={() => mudarNivelSimpl(n.id)}
+                    className="flex-1 h-11 rounded-xl text-sm font-semibold"
+                    style={nivelSimpl === n.id ? { background: t.acorde, color: t.fundo } : botao}
+                  >
+                    {n.nome}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <Linha rotulo="Tamanho da letra" detalhe={prefs.fonte ? `${fonte}px` : `automático (${fonte}px)`}>
               <Passo onMenos={() => tamanho(-1)} onMais={() => tamanho(1)} estilo={botao} />
