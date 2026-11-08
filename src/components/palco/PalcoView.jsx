@@ -401,15 +401,6 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
         )}
       </div>
 
-      {/* Contagem antes de rolar */}
-      {contagem > 0 && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
-          <div className="rounded-3xl px-10 py-6 text-center" style={{ background: t.barra, border: `1px solid ${t.borda}` }}>
-            <div className="text-sm opacity-75">Começa a rolar em</div>
-            <div className="text-7xl font-black tabular-nums" style={{ color: t.acorde }}>{contagem}</div>
-          </div>
-        </div>
-      )}
 
       {/* Barra de baixo */}
       <div
