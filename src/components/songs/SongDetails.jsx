@@ -31,6 +31,10 @@ import AuditPanel from "./AuditPanel";
 import TocarJuntoPlayer from "@/components/TocarJuntoPlayer";
 import GpImporter from "@/components/GpImporter";
 import { parseSoloTab } from "@/lib/soloTabUtils";
+import PalcoView from "@/components/palco/PalcoView";
+import { tituloLegivel } from "./SongRow";
+import { ChevronLeft, MoreVertical, MonitorPlay } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import {
   transposeKey,
@@ -58,6 +62,7 @@ export default function SongDetails({ song: initialSong, onClose, initialTab = "
     return initialTab || 'cifra';
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [palcoAberto, setPalcoAberto] = useState(false);
   const [isEditingProgressions, setIsEditingProgressions] = useState(false);
   const [progressions, setProgressions] = useState([]);
   const [semitones, setSemitones] = useState(0);
@@ -625,13 +630,14 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
   };
 
   const hasSoloTab = !!parseSoloTab(song.solo_tab);
+  const isAdmin = currentUser?.role === 'admin';
   const tabs = [
-    { id: 'progressions', label: '🎵 Progressões' },
-    { id: 'cifra', label: '📄 Cifra' },
-    { id: 'auditoria', label: '🛡️ Auditoria' },
-    { id: 'theory', label: '🎓 Teoria' },
-    { id: 'notes', label: '🎼 Análise Harmônica' },
-    ...(hasSoloTab || currentUser?.role === 'admin' ? [{ id: 'tocarjunto', label: '🎼 Tocar junto' }] : []),
+    { id: 'cifra', label: 'Cifra' },
+    ...(hasSoloTab || isAdmin ? [{ id: 'tocarjunto', label: 'Tocar junto' }] : []),
+    { id: 'notes', label: 'Análise harmônica' },
+    { id: 'progressions', label: 'Progressões' },
+    { id: 'theory', label: 'Teoria' },
+    ...(isAdmin ? [{ id: 'auditoria', label: 'Auditoria' }] : []),
   ];
 
   return (
@@ -647,81 +653,79 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-amber-50 shadow-2xl w-full h-full overflow-hidden flex flex-col"
+          className="bg-[#FBF6EA] shadow-2xl w-full h-full overflow-hidden flex flex-col"
         >
-          {/* Header */}
-          <div className="bg-gradient-to-r from-[#8B6F47] via-[#A68A64] to-[#D4AF37] p-4 md:p-6">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl md:text-2xl font-bold text-white truncate">{song.title}</h2>
-                <p className="text-white/80 text-sm md:text-base">{song.artist}</p>
-                {song.author && <p className="text-white/60 text-xs">Compositor: {song.author}</p>}
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {song.genre_style && (
-                    <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                      {genreLabels[song.genre_style] || song.genre_style}
-                    </Badge>
-                  )}
-                  {song.main_key && (
-                    <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                      🎵 Tom: {song.main_key}
-                    </Badge>
-                  )}
-                  {song.rhythm_name && (
-                    <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                      🥁 {song.rhythm_name}
-                    </Badge>
-                  )}
-                  {song.tempo && (
-                    <Badge className="bg-white/20 text-white border-white/30 text-xs">
-                      ♩ {song.tempo} BPM
-                    </Badge>
-                  )}
-                </div>
+          {/* Cabeçalho */}
+          <div className="bg-[#FFFDF8] border-b border-[#E6DCC8] px-2 pt-1 pb-3 md:px-4" style={{ paddingTop: "max(4px, env(safe-area-inset-top))" }}>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Voltar"
+                className="w-11 h-11 flex items-center justify-center rounded-xl text-[#6B4F2E] hover:bg-[#F3EAD6]"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+              <div className="flex-1" />
+              {isAdmin && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button type="button" aria-label="Mais opções" className="w-11 h-11 flex items-center justify-center rounded-xl text-[#6B4F2E] hover:bg-[#F3EAD6]">
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2" />Editar música</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDeleteSong} disabled={deleteSongMutation.isPending} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Excluir música</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+            <div className="px-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-[#4A3520] leading-tight" style={{ fontFamily: "Bitter, Georgia, serif" }}>
+                {tituloLegivel(song.title)}
+              </h2>
+              <p className="text-[15px] text-[#7A6A55] mt-0.5">
+                {tituloLegivel(song.artist)}
+                {song.author && <span className="text-[#9A8A75]"> · comp. {tituloLegivel(song.author)}</span>}
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {song.main_key && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#F3EAD6] text-[#4A3520]">Tom {song.main_key}</span>}
+                {song.rhythm_name && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#F3EAD6] text-[#4A3520]">{tituloLegivel(song.rhythm_name)}</span>}
+                {song.genre_style && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#F3EAD6] text-[#4A3520]">{(genreLabels[song.genre_style] || song.genre_style).replace(/^[^A-Za-zÀ-ú]+/, "")}</span>}
+                {song.tempo && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#F3EAD6] text-[#4A3520]">{song.tempo} BPM</span>}
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsEditing(true)}
-                  className="text-white hover:bg-white/20"
-                  title="Editar música"
+              <div className="flex gap-2 mt-3">
+                <button
+                  type="button"
+                  onClick={() => setPalcoAberto(true)}
+                  className="flex-1 h-12 rounded-xl bg-[#6B4F2E] hover:bg-[#5A4226] text-[#FFFDF8] font-semibold flex items-center justify-center gap-2"
                 >
-                  <Edit className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDeleteSong}
-                  className="text-white hover:bg-red-500/40"
-                  title="Deletar música"
-                  disabled={deleteSongMutation.isPending}
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="text-white hover:bg-white/20"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
+                  <MonitorPlay className="w-5 h-5" /> Modo palco
+                </button>
+                {hasSoloTab && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('tocarjunto')}
+                    className="flex-1 h-12 rounded-xl border border-[#B8860B] bg-[#FFF6DC] text-[#6B4F2E] font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Play className="w-5 h-5" fill="currentColor" /> Tocar junto
+                  </button>
+                )}
               </div>
             </div>
-
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-[#D4C5B0] bg-white/50 overflow-x-auto">
+          <div className="flex border-b border-[#E6DCC8] bg-[#FFFDF8] overflow-x-auto px-1" style={{ scrollbarWidth: "none" }}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 md:px-5 py-3 text-xs md:text-sm font-medium whitespace-nowrap transition-all border-b-2 inline-flex items-center gap-1.5 ${
+                className={`px-3 md:px-5 py-3 text-sm whitespace-nowrap transition-all border-b-[3px] inline-flex items-center gap-1.5 ${
                   activeTab === tab.id
-                    ? 'border-[#8B6F47] text-[#8B6F47] bg-amber-50'
-                    : 'border-transparent text-[#A68A64] hover:text-[#8B6F47]'
+                    ? 'border-[#B8860B] text-[#4A3520] font-semibold'
+                    : 'border-transparent text-[#7A6A55] hover:text-[#4A3520]'
                 }`}
               >
                 {tab.label}
@@ -1164,6 +1168,8 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
       </motion.div>
 
       {/* Modal de edição */}
+      {palcoAberto && <PalcoView songs={[song]} onClose={() => setPalcoAberto(false)} />}
+
       {isEditing && (
         <SongEditForm
           song={song}

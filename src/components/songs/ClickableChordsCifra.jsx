@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { quebrarCifra } from "@/components/palco/cifraPalco";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import {
@@ -17,7 +18,19 @@ export default function ClickableChordsCifra({ cifraText, className = "", highli
   const [chordVariations, setChordVariations] = useState({});
   const [favoriteChords, setFavoriteChords] = useState([]);
   const [fontSize, setFontSize] = useState(14);
-  const [wrapText, setWrapText] = useState(false);
+  // No celular a quebra de linha já vem ligada (acorde e letra quebram juntos)
+  const [wrapText, setWrapText] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+  const caixaRef = React.useRef(null);
+  const [largura, setLargura] = useState(0);
+  useEffect(() => {
+    const el = caixaRef.current;
+    if (!el) return;
+    const medir = () => setLargura(el.clientWidth);
+    medir();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(medir) : null;
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, []);
 
   const { data: chords = [] } = useQuery({
     queryKey: ['chords-cifra'],
@@ -382,6 +395,8 @@ export default function ClickableChordsCifra({ cifraText, className = "", highli
   };
 
   const lines = cifraText.split('\n');
+  const colunas = wrapText && largura ? Math.floor(largura / (fontSize * 0.6)) - 1 : 0;
+  const pedacos = colunas ? quebrarCifra(lines, colunas, isChordLine) : lines.map((texto, origem) => ({ texto, origem }));
 
   return (
     <div className={`text-[#2d1810] ${className}`}>
@@ -423,21 +438,22 @@ export default function ClickableChordsCifra({ cifraText, className = "", highli
         </span>
       </div>
 
-      <pre style={{ 
+      <pre ref={caixaRef} style={{ 
         fontFamily: "'Courier New', Courier, monospace",
         fontSize: `${fontSize}px`,
         lineHeight: "1.8",
-        whiteSpace: wrapText ? "pre-wrap" : "pre",
+        whiteSpace: "pre",
         overflowX: wrapText ? "hidden" : "auto",
         margin: 0,
         padding: 0
       }}>
-        {lines.map((line, index) => {
+        {pedacos.map(({ texto: line, origem: index }, k) => {
           const isHl = highlightLine != null && highlightLine - 1 === index;
+          const primeiro = k === 0 || pedacos[k - 1].origem !== index;
           return (
             <div
-              key={`wrap-${index}`}
-              id={`cifra-line-${index}`}
+              key={`wrap-${k}`}
+              id={primeiro ? `cifra-line-${index}` : undefined}
               className={`rounded ${isHl ? 'bg-[#FFE08A] ring-2 ring-[#D4AF37]' : ''}`}
             >
               {renderLine(line, index)}

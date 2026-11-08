@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Save, X, FileText, Loader2, Printer, Download, MessageCircle, CaseUpper } from "lucide-react";
+import { Edit, Save, X, FileText, Loader2, Printer, Download, MessageCircle, CaseUpper, ArrowUpDown, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ClickableChordsCifra from "./ClickableChordsCifra";
 import TranspositorCifra from "./TranspositorCifra";
 import CifraWithComments from "./CifraWithComments";
 import { uppercaseSelection } from "@/utils/textCaseUtils";
 
 export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveComments, isAdmin = false, highlightLine = null }) {
+  const [mostrarTom, setMostrarTom] = React.useState(false);
   // onSaveCifra recebe (newText) ou (newText, newKey) se vindo do transpositor
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(song.cifra_text || "");
@@ -131,78 +133,77 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
 
   return (
     <div className="space-y-3">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-[#8B6F47]">Cifra</h3>
-        {!isEditing ? (
-          <div className="flex gap-2">
-            {viewText && (
-              <>
-                <Button
-                  onClick={handlePrintCifra}
-                  variant="outline"
-                  size="sm"
-                  className="border-[#8B6F47] text-[#8B6F47] hover:bg-[#8B6F47] hover:text-white"
-                >
-                  <Printer className="w-4 h-4 mr-2" />
-                  Imprimir Cifra
-                </Button>
-                <Button
-                  onClick={handleExportDoc}
-                  variant="outline"
-                  size="sm"
-                  className="border-[#8B6F47] text-[#8B6F47] hover:bg-[#8B6F47] hover:text-white"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Exportar .DOC
-                </Button>
-              </>
-            )}
-            <Button
+      {/* Barra da cifra */}
+      {!isEditing ? (
+        <div className="flex items-center gap-2">
+          {viewText && (
+            <button
+              type="button"
+              onClick={() => setMostrarTom((v) => !v)}
+              aria-expanded={mostrarTom}
+              className={`h-10 px-3 rounded-xl border text-sm font-semibold flex items-center gap-1.5 ${mostrarTom ? "bg-[#6B4F2E] text-[#FFFDF8] border-[#6B4F2E]" : "bg-[#FFFDF8] text-[#6B4F2E] border-[#E6DCC8]"}`}
+            >
+              <ArrowUpDown className="w-4 h-4" /> Mudar tom
+            </button>
+          )}
+          <div className="flex-1" />
+          {isAdmin && (
+            <button
+              type="button"
               onClick={() => { setEditText(displayText || ""); setIsEditing(true); }}
-              variant="outline"
-              size="sm"
-              className="border-[#8B6F47] text-[#8B6F47] hover:bg-[#8B6F47] hover:text-white"
+              className="h-10 px-3 rounded-xl border border-[#E6DCC8] bg-[#FFFDF8] text-[#6B4F2E] text-sm font-semibold flex items-center gap-1.5"
             >
-              <Edit className="w-4 h-4 mr-2" />
-              Editar Cifra
-            </Button>
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => uppercaseSelection(textareaRef.current, editText, setEditText)}
-              size="sm"
-              variant="outline"
-              className="border-[#D4AF37] text-[#8B6F47] hover:bg-[#D4AF37] hover:text-white"
-              title="Selecione um trecho para colocar em caixa alta (ou clique para converter tudo)"
-            >
-              <CaseUpper className="w-4 h-4 mr-1" />
-              Caixa Alta
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving} size="sm" className="bg-[#8B6F47] text-white hover:bg-[#6B5437]">
-              {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-              Salvar
-            </Button>
-            <Button onClick={handleCancel} variant="outline" size="sm" className="border-[#D4C5B0] text-[#8B6F47]">
-              <X className="w-4 h-4 mr-1" />
-              Cancelar
-            </Button>
-          </div>
-        )}
-      </div>
+              <Edit className="w-4 h-4" /> Editar
+            </button>
+          )}
+          {viewText && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" aria-label="Imprimir ou exportar a cifra" className="w-10 h-10 rounded-xl border border-[#E6DCC8] bg-[#FFFDF8] text-[#6B4F2E] flex items-center justify-center">
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={handlePrintCifra}><Printer className="w-4 h-4 mr-2" />Imprimir cifra</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportDoc}><Download className="w-4 h-4 mr-2" />Exportar .DOC</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => uppercaseSelection(textareaRef.current, editText, setEditText)}
+            size="sm"
+            variant="outline"
+            className="border-[#D4AF37] text-[#8B6F47] hover:bg-[#D4AF37] hover:text-white"
+            title="Selecione um trecho para colocar em caixa alta (ou clique para converter tudo)"
+          >
+            <CaseUpper className="w-4 h-4 mr-1" />
+            Caixa Alta
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving} size="sm" className="bg-[#8B6F47] text-white hover:bg-[#6B5437]">
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+            Salvar
+          </Button>
+          <Button onClick={handleCancel} variant="outline" size="sm" className="border-[#D4C5B0] text-[#8B6F47]">
+            <X className="w-4 h-4 mr-1" />
+            Cancelar
+          </Button>
+        </div>
+      )}
 
-      {/* Transpositor */}
-      {!isEditing && viewText && (
+      {/* Transpositor (aberto pelo botão "Mudar tom"; salvar o tom é só do administrador) */}
+      {!isEditing && viewText && mostrarTom && (
         <TranspositorCifra
           cifraText={displayText || song.cifra_text || ""}
           originalKey={song.original_key}
           currentKey={song.main_key || song.original_key}
-          onApply={async (newText, newKey) => {
+          onApply={isAdmin ? async (newText, newKey) => {
             await onSaveCifra(newText, newKey);
             setDisplayText(newText);
             locallyModified.current = true;
-          }}
+          } : undefined}
         />
       )}
 
@@ -219,7 +220,7 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
           />
         </div>
       ) : viewText ? (
-        <div className="bg-white/60 rounded-xl border border-[#D4C5B0] p-4">
+        <div className="bg-[#FFFDF8] rounded-2xl border border-[#E6DCC8] p-3 md:p-4">
           {/* Toggle balões */}
           {onSaveComments && (
             <div className="flex justify-end mb-2">
@@ -259,10 +260,12 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
         <div className="text-center py-12 text-[#A68A64]">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p className="mb-3">Nenhuma cifra cadastrada para esta música.</p>
+          {isAdmin && (
           <Button onClick={() => setIsEditing(true)} variant="outline" className="border-[#8B6F47] text-[#8B6F47] hover:bg-[#8B6F47] hover:text-white">
             <Edit className="w-4 h-4 mr-2" />
             Adicionar Cifra
           </Button>
+          )}
         </div>
       )}
     </div>
