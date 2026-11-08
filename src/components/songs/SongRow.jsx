@@ -100,6 +100,11 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
             </button>
           )}
           <span className="truncate">{tituloLegivel(song.title)}</span>
+          {song.main_key && (
+            <span className={`flex-shrink-0 ml-0.5 px-1.5 rounded-md text-[12px] font-bold leading-5 ${t.tom}`} title={modula ? "Tom (a música modula)" : "Tom"}>
+              {song.main_key}{modula ? "*" : ""}
+            </span>
+          )}
         </div>
         <div className={`text-[13px] leading-snug truncate ${t.artista}`}>{tituloLegivel(song.artist)}</div>
       </div>
@@ -140,7 +145,7 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52" onClick={(e) => e.stopPropagation()}>
-          {song.main_key && <div className="px-2 py-1.5 text-xs text-muted-foreground">Tom {song.main_key}{modula ? " (modula)" : ""}{meta ? ` · ${meta}` : ""}</div>}
+          {meta && <div className="px-2 py-1.5 text-xs text-muted-foreground">{modula ? "Modula · " : ""}{meta}</div>}
           {temTab && onTocarJunto && <DropdownMenuItem onClick={pare(onTocarJunto)}><Play className="w-4 h-4 mr-2" />Tocar junto</DropdownMenuItem>}
           {onInfo && <DropdownMenuItem onClick={pare(onInfo)}><Info className="w-4 h-4 mr-2" />Informações</DropdownMenuItem>}
           {onApostila && <DropdownMenuItem onClick={pare(onApostila)}><FileText className="w-4 h-4 mr-2" />Apostila desta música</DropdownMenuItem>}
