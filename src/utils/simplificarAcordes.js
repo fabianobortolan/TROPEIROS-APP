@@ -90,6 +90,24 @@ export function simplificarCifra(texto, nivel) {
     .join("\n");
 }
 
+// Diz se algum acorde da cifra muda ao simplificar (compara acorde por acorde;
+// espaços no fim da linha e ° / º não contam como mudança)
+export function temOQueSimplificar(texto, nivel = "iniciante") {
+  if (!texto) return false;
+  const igual = (a, b) => a.replace(/º/g, "°") === b.replace(/º/g, "°");
+  for (const linha of texto.split("\n")) {
+    if (!isChordLine(linha)) continue;
+    const trecho = linha.slice(chordStartIndex(linha));
+    ACORDE_RE.lastIndex = 0;
+    let m;
+    while ((m = ACORDE_RE.exec(trecho)) !== null) {
+      if (!m[0]) { ACORDE_RE.lastIndex++; continue; }
+      if (!igual(montar(m, nivel), m[0])) return true;
+    }
+  }
+  return false;
+}
+
 // Preferência guardada no aparelho (vale para todas as músicas)
 const CHAVE = "cifra:simplificar";
 export const lerNivelSimplificacao = () => { try { return localStorage.getItem(CHAVE) || ""; } catch { return ""; } };

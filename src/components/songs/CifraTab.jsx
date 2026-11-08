@@ -7,7 +7,7 @@ import ClickableChordsCifra from "./ClickableChordsCifra";
 import TranspositorCifra from "./TranspositorCifra";
 import CifraWithComments from "./CifraWithComments";
 import { uppercaseSelection } from "@/utils/textCaseUtils";
-import { simplificarCifra, NIVEIS_SIMPLIFICACAO, lerNivelSimplificacao, gravarNivelSimplificacao } from "@/utils/simplificarAcordes";
+import { simplificarCifra, temOQueSimplificar, NIVEIS_SIMPLIFICACAO, lerNivelSimplificacao, gravarNivelSimplificacao } from "@/utils/simplificarAcordes";
 
 export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveComments, isAdmin = false, highlightLine = null }) {
   const [mostrarTom, setMostrarTom] = React.useState(false);
@@ -53,7 +53,7 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
   // O texto a exibir: se transposto e não há edição local, usa transposedCifra; senão usa displayText
   const textoBase = (!locallyModified.current && transposedCifra) ? transposedCifra : displayText;
   // Só oferece "Simplificar" se a música tem acordes que mudam
-  const podeSimplificar = useMemo(() => !!textoBase && simplificarCifra(textoBase, "iniciante") !== textoBase, [textoBase]);
+  const podeSimplificar = useMemo(() => temOQueSimplificar(textoBase), [textoBase]);
   const viewText = useMemo(() => (nivel && podeSimplificar ? simplificarCifra(textoBase, nivel) : textoBase), [textoBase, nivel, podeSimplificar]);
   const nomeNivel = NIVEIS_SIMPLIFICACAO.find((x) => x.id === nivel)?.nome;
 
