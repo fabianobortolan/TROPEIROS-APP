@@ -17,7 +17,7 @@ import PalcoView from "../components/palco/PalcoView";
 import CadernosManager from "../components/cadernos/CadernosManager";
 import SongInfoModal from "../components/songs/SongInfoModal";
 import LibraryApostila from "../components/songs/LibraryApostila";
-import SongRow, { SongRowHeader } from "../components/songs/SongRow";
+import SongRow from "../components/songs/SongRow";
 import LibraryHeader from "../components/songs/LibraryHeader";
 
 // Estilos que pertencem a esta biblioteca
@@ -314,12 +314,11 @@ export default function LibrarySambaMPB() {
                 </Link>
               </motion.div>
             ) : (
-              <div className="flex flex-col gap-2">
-            <SongRowHeader tema="azul" />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5">
                 {groupedSongs.map((row, index) => {
                   if (row.type === "header") {
                     return (
-                      <div key={`header-${row.genre}`} className="flex items-center gap-3 pt-3 pb-1">
+                      <div key={`header-${row.genre}`} className="lg:col-span-2 flex items-center gap-3 pt-3 pb-1">
                         <span className="text-xs font-bold px-3 py-1 rounded-full border bg-blue-100 text-blue-900 border-blue-200">
                           {genreLabels[row.genre] || row.genre}
                         </span>

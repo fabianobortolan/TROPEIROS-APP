@@ -48,19 +48,19 @@ const TEMAS = {
     linha: "bg-[#FFFDF8] border-[#E6DCC8] hover:border-[#C9B48E]",
     tom: "bg-[#F3EAD6] text-[#4A3520]", tomRotulo: "text-[#7A6A55]",
     titulo: "text-[#2E2418]", artista: "text-[#7A6A55]", meta: "text-[#6B4F2E]",
-    pill: "bg-[#B8860B] text-[#FFFDF8]", botao: "text-[#7A6A55] hover:bg-[#F3EAD6]",
+    pill: "bg-[#B8860B] text-[#FFFDF8]", botao: "text-[#7A6A55] hover:bg-[#F3EAD6]", palco: "bg-[#6B4F2E] text-[#FFFDF8] hover:bg-[#5A4226]",
   },
   laranja: {
     linha: "bg-white/[0.04] border-orange-500/20 hover:border-orange-400/50",
     tom: "bg-orange-500/15 text-orange-100", tomRotulo: "text-orange-300/80",
     titulo: "text-orange-50", artista: "text-orange-300/90", meta: "text-orange-200/80",
-    pill: "bg-orange-500 text-white", botao: "text-orange-200 hover:bg-white/10",
+    pill: "bg-orange-500 text-white", botao: "text-orange-200 hover:bg-white/10", palco: "bg-orange-500/20 text-orange-100 border border-orange-400/40 hover:bg-orange-500/30",
   },
   azul: {
     linha: "bg-white/[0.04] border-blue-500/25 hover:border-blue-400/60",
     tom: "bg-blue-500/15 text-blue-50", tomRotulo: "text-blue-300/80",
     titulo: "text-blue-50", artista: "text-blue-200/90", meta: "text-blue-200/80",
-    pill: "bg-blue-500 text-white", botao: "text-blue-200 hover:bg-white/10",
+    pill: "bg-blue-500 text-white", botao: "text-blue-200 hover:bg-white/10", palco: "bg-blue-500/20 text-blue-100 border border-blue-400/40 hover:bg-blue-500/30",
   },
 };
 
@@ -83,67 +83,64 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
       tabIndex={0}
       onClick={abrir}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(); } }}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl border cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] ${t.linha}`}
+      className={`flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-xl border cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] ${t.linha}`}
     >
-      <div className={`w-11 h-11 flex-shrink-0 rounded-xl flex flex-col items-center justify-center ${t.tom}`}>
-        <span className={`text-[10px] leading-none ${t.tomRotulo}`}>Tom</span>
-        <span className="text-[15px] font-bold leading-tight flex items-center gap-0.5">
-          {song.main_key || "–"}
-          {modula && <RefreshCw className="w-2.5 h-2.5 opacity-70" aria-label="modula" />}
-        </span>
-      </div>
-
-      <div className="flex-1 min-w-0 md:grid md:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.3fr)] md:gap-4 md:items-center">
-        <div className="min-w-0">
-          <div className={`flex items-center gap-1.5 text-[15px] font-semibold ${t.titulo}`}>
-            {song.is_fully_revised && <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" aria-label="Música revisada" />}
-            {sev && (
-              <button
-                type="button"
-                onClick={pare(onInfo)}
-                className={`flex-shrink-0 ${corAlerta}`}
-                aria-label="Ver alertas da cifra"
-                title="Ver alertas da cifra"
-              >
-                <AlertTriangle className="w-4 h-4" />
-              </button>
-            )}
-            <span className="truncate">{tituloLegivel(song.title)}</span>
-          </div>
-          <div className={`text-[13px] truncate ${t.artista}`}>{tituloLegivel(song.artist)}</div>
-          {meta && <div className={`md:hidden text-[12px] mt-0.5 truncate ${t.meta}`}>{meta}</div>}
+      <div className="flex-1 min-w-0 py-0.5">
+        <div className={`flex items-center gap-1.5 text-[15px] font-semibold leading-snug ${t.titulo}`}>
+          {song.is_fully_revised && <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" aria-label="Música revisada" />}
+          {sev && (
+            <button
+              type="button"
+              onClick={pare(onInfo)}
+              className={`flex-shrink-0 ${corAlerta}`}
+              aria-label="Ver alertas da cifra"
+              title="Ver alertas da cifra"
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <span className="truncate">{tituloLegivel(song.title)}</span>
         </div>
-        <div className={`hidden md:block text-[13px] truncate ${t.meta}`}>{tituloLegivel(song.rhythm_name) || "—"}</div>
-        <div className={`hidden md:block text-[13px] truncate ${t.meta}`}>{tituloLegivel(prog) || "—"}</div>
-        <div className={`hidden md:block text-[13px] font-semibold truncate ${t.meta}`}>{acordes.length ? acordes.join("–") : "—"}</div>
+        <div className={`text-[13px] leading-snug truncate ${t.artista}`}>{tituloLegivel(song.artist)}</div>
       </div>
 
       {temTab && (
         <button
           type="button"
           onClick={pare(onTocarJunto)}
-          className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full ${t.pill}`}
+          className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full ${t.pill}`}
           aria-label={`Tocar junto: ${tituloLegivel(song.title)}`}
           title="Tocar junto — tablatura do solo"
         >
           <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
         </button>
       )}
-      {!temTab && <div className="hidden md:block w-10 flex-shrink-0" aria-hidden="true" />}
+
+      {onStage && (
+        <button
+          type="button"
+          onClick={pare(onStage)}
+          className={`flex-shrink-0 h-9 px-2.5 flex items-center gap-1.5 rounded-lg text-[13px] font-semibold ${t.palco}`}
+          aria-label={`Modo palco: ${tituloLegivel(song.title)}`}
+          title="Modo palco"
+        >
+          <MonitorPlay className="w-4 h-4" /> Palco
+        </button>
+      )}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className={`flex-shrink-0 w-10 h-10 -mr-1 flex items-center justify-center rounded-xl ${t.botao}`}
+            className={`flex-shrink-0 w-8 h-9 flex items-center justify-center rounded-lg ${t.botao}`}
             aria-label={`Mais opções para ${tituloLegivel(song.title)}`}
           >
             <MoreVertical className="w-5 h-5" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52" onClick={(e) => e.stopPropagation()}>
-          {onStage && <DropdownMenuItem onClick={pare(onStage)}><MonitorPlay className="w-4 h-4 mr-2" />Modo palco</DropdownMenuItem>}
+          {song.main_key && <div className="px-2 py-1.5 text-xs text-muted-foreground">Tom {song.main_key}{modula ? " (modula)" : ""}{meta ? ` · ${meta}` : ""}</div>}
           {temTab && onTocarJunto && <DropdownMenuItem onClick={pare(onTocarJunto)}><Play className="w-4 h-4 mr-2" />Tocar junto</DropdownMenuItem>}
           {onInfo && <DropdownMenuItem onClick={pare(onInfo)}><Info className="w-4 h-4 mr-2" />Informações</DropdownMenuItem>}
           {onApostila && <DropdownMenuItem onClick={pare(onApostila)}><FileText className="w-4 h-4 mr-2" />Apostila desta música</DropdownMenuItem>}
@@ -154,16 +151,3 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
   );
 }
 
-// Títulos das colunas (só no computador)
-export function SongRowHeader({ tema = "claro" }) {
-  const cor = tema === "claro" ? "text-[#7A6A55]" : tema === "laranja" ? "text-orange-300/80" : "text-blue-300/80";
-  return (
-    <div className={`hidden md:flex items-center gap-3 px-3 pb-1 text-xs font-semibold ${cor}`}>
-      <div className="w-11 flex-shrink-0 text-center">Tom</div>
-      <div className="flex-1 min-w-0 grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.3fr)] gap-4">
-        <span>Música</span><span>Ritmo</span><span>Progressão</span><span>Acordes</span>
-      </div>
-      <div className="w-[88px] flex-shrink-0" />
-    </div>
-  );
-}
