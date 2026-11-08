@@ -93,24 +93,29 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
         </span>
       </div>
 
-      <div className="flex-1 min-w-0">
-        <div className={`flex items-center gap-1.5 text-[15px] font-semibold ${t.titulo}`}>
-          {song.is_fully_revised && <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" aria-label="Música revisada" />}
-          {sev && (
-            <button
-              type="button"
-              onClick={pare(onInfo)}
-              className={`flex-shrink-0 ${corAlerta}`}
-              aria-label="Ver alertas da cifra"
-              title="Ver alertas da cifra"
-            >
-              <AlertTriangle className="w-4 h-4" />
-            </button>
-          )}
-          <span className="truncate">{tituloLegivel(song.title)}</span>
+      <div className="flex-1 min-w-0 md:grid md:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.3fr)] md:gap-4 md:items-center">
+        <div className="min-w-0">
+          <div className={`flex items-center gap-1.5 text-[15px] font-semibold ${t.titulo}`}>
+            {song.is_fully_revised && <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" aria-label="Música revisada" />}
+            {sev && (
+              <button
+                type="button"
+                onClick={pare(onInfo)}
+                className={`flex-shrink-0 ${corAlerta}`}
+                aria-label="Ver alertas da cifra"
+                title="Ver alertas da cifra"
+              >
+                <AlertTriangle className="w-4 h-4" />
+              </button>
+            )}
+            <span className="truncate">{tituloLegivel(song.title)}</span>
+          </div>
+          <div className={`text-[13px] truncate ${t.artista}`}>{tituloLegivel(song.artist)}</div>
+          {meta && <div className={`md:hidden text-[12px] mt-0.5 truncate ${t.meta}`}>{meta}</div>}
         </div>
-        <div className={`text-[13px] truncate ${t.artista}`}>{tituloLegivel(song.artist)}</div>
-        {meta && <div className={`text-[12px] mt-0.5 truncate ${t.meta}`}>{meta}</div>}
+        <div className={`hidden md:block text-[13px] truncate ${t.meta}`}>{tituloLegivel(song.rhythm_name) || "—"}</div>
+        <div className={`hidden md:block text-[13px] truncate ${t.meta}`}>{tituloLegivel(prog) || "—"}</div>
+        <div className={`hidden md:block text-[13px] font-semibold truncate ${t.meta}`}>{acordes.length ? acordes.join("–") : "—"}</div>
       </div>
 
       {temTab && (
@@ -124,6 +129,7 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
           <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
         </button>
       )}
+      {!temTab && <div className="hidden md:block w-10 flex-shrink-0" aria-hidden="true" />}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -144,6 +150,20 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
           {onEditChords && <DropdownMenuItem onClick={pare(onEditChords)}><Pencil className="w-4 h-4 mr-2" />Editar acordes</DropdownMenuItem>}
         </DropdownMenuContent>
       </DropdownMenu>
+    </div>
+  );
+}
+
+// Títulos das colunas (só no computador)
+export function SongRowHeader({ tema = "claro" }) {
+  const cor = tema === "claro" ? "text-[#7A6A55]" : tema === "laranja" ? "text-orange-300/80" : "text-blue-300/80";
+  return (
+    <div className={`hidden md:flex items-center gap-3 px-3 pb-1 text-xs font-semibold ${cor}`}>
+      <div className="w-11 flex-shrink-0 text-center">Tom</div>
+      <div className="flex-1 min-w-0 grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.3fr)] gap-4">
+        <span>Música</span><span>Ritmo</span><span>Progressão</span><span>Acordes</span>
+      </div>
+      <div className="w-[88px] flex-shrink-0" />
     </div>
   );
 }

@@ -31,7 +31,7 @@ import PalcoView from "../components/palco/PalcoView";
 import CadernosManager from "../components/cadernos/CadernosManager";
 import HarmonicSetlistAnalyzer from "../components/analysis/HarmonicSetlistAnalyzer";
 import EditChordsModal from "../components/songs/EditChordsModal";
-import SongRow from "../components/songs/SongRow";
+import SongRow, { SongRowHeader } from "../components/songs/SongRow";
 import LibraryHeader from "../components/songs/LibraryHeader";
 import EnriquecerDadosModal from "../components/songs/EnriquecerDadosModal";
 import BuscarCifraModal from "../components/songs/BuscarCifraModal";
@@ -507,6 +507,7 @@ export default function Library() {
           </motion.div> :
 
           <div className="flex flex-col gap-2">
+            <SongRowHeader tema="claro" />
             {filteredSongs.map((song) => (
               <SongRow
                 key={song.id}

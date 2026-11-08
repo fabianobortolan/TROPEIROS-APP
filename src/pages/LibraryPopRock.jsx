@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { parseSoloTab } from "@/lib/soloTabUtils";
-import SongRow from "../components/songs/SongRow";
+import SongRow, { SongRowHeader } from "../components/songs/SongRow";
 import LibraryHeader from "../components/songs/LibraryHeader";
 
 import SongDetails from "../components/songs/SongDetails";
@@ -312,6 +312,7 @@ export default function LibraryPopRock() {
               </motion.div>
             ) : (
               <div className="flex flex-col gap-2">
+            <SongRowHeader tema="laranja" />
                 {groupedSongs.map((row, index) => {
                   if (row.type === 'header') {
                     return (
