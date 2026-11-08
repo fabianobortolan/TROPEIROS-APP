@@ -72,6 +72,9 @@ button:focus-visible {
   }
 } */
 
+/* Nada pode alargar a página além da tela do celular */
+html, body { overflow-x: clip; }
+
 
 
 @layer base {

@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SetlistForm from "../components/setlists/SetlistForm";
 import SetlistCard from "../components/setlists/SetlistCard";
 import SetlistDetails from "../components/setlists/SetlistDetails";
-import StageView from "../components/setlists/StageView";
+import PalcoView from "../components/palco/PalcoView";
 import SetlistApostila from "../components/setlists/SetlistApostila";
 
 export default function Setlists() {
@@ -136,21 +136,21 @@ export default function Setlists() {
   }
 
   return (
-    <div className="bg-amber-50 p-4 min-h-screen md:p-8">
+    <div className="bg-[#FBF6EA] p-4 min-h-screen md:p-8">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8">
+          className="mb-4">
 
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-bold text-[#8B6F47] mb-2" style={{ letterSpacing: '0.5px' }}>
-                Setlists
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-2xl md:text-3xl font-bold text-[#4A3520]" style={{ fontFamily: "Bitter, Georgia, serif" }}>
+                Repertórios
               </h1>
-              <p className="text-[#A68A64]">Organize suas apresentações e sequências de músicas</p>
+              <p className="text-sm text-[#7A6A55]">As músicas de cada apresentação, na ordem</p>
             </div>
-            <div className="flex gap-2 mt-1">
+            <div className="flex flex-wrap gap-2">
               {isAdmin && (
               <Button
                 onClick={() => setActiveTab("ia")}
@@ -195,7 +195,7 @@ export default function Setlists() {
           <div className="flex flex-col md:flex-row gap-4 items-center">
             <div className="flex-1 w-full">
               <Input
-                placeholder="Buscar setlists por nome ou local..."
+                placeholder="Buscar repertório por nome ou local..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-white border-[#D4C5B0] focus:border-[#8B6F47]" />
@@ -299,9 +299,9 @@ export default function Setlists() {
 
         <AnimatePresence>
           {stageViewSetlist &&
-          <StageView
-            setlist={stageViewSetlist}
-            songs={songs}
+          <PalcoView
+            songs={(stageViewSetlist.songs || []).map((id) => (songs || []).find((s) => s.id === id)).filter(Boolean)}
+            titulo={stageViewSetlist.name}
             onClose={() => setStageViewSetlist(null)} />
           }
         </AnimatePresence>

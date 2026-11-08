@@ -27,7 +27,7 @@ import CompareAnalyses from "../components/analysis/CompareAnalyses";
 import SimilarityAnalysis from "../components/analysis/SimilarityAnalysis";
 
 
-import StageModeView from "../components/songs/StageModeView";
+import PalcoView from "../components/palco/PalcoView";
 import CadernosManager from "../components/cadernos/CadernosManager";
 import HarmonicSetlistAnalyzer from "../components/analysis/HarmonicSetlistAnalyzer";
 import EditChordsModal from "../components/songs/EditChordsModal";
@@ -558,9 +558,7 @@ export default function Library() {
           }
 
         {stageSong &&
-          <StageModeView
-            song={stageSong}
-            onClose={() => setStageSong(null)} />
+          <PalcoView songs={[stageSong]} onClose={() => setStageSong(null)} />
           }
 
         {apostilaSong &&

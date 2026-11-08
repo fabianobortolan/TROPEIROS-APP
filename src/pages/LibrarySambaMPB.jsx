@@ -13,7 +13,7 @@ import { createPageUrl } from "@/utils";
 
 import SongDetails from "../components/songs/SongDetails";
 import ApostilaPDF from "../components/songs/ApostilaPDF";
-import StageModeView from "../components/songs/StageModeView";
+import PalcoView from "../components/palco/PalcoView";
 import CadernosManager from "../components/cadernos/CadernosManager";
 import SongInfoModal from "../components/songs/SongInfoModal";
 import LibraryApostila from "../components/songs/LibraryApostila";
@@ -357,7 +357,7 @@ export default function LibrarySambaMPB() {
                 }}
               />
             )}
-            {stageSong && <StageModeView song={stageSong} onClose={() => setStageSong(null)} />}
+            {stageSong && <PalcoView songs={[stageSong]} onClose={() => setStageSong(null)} />}
             {apostilaSong && <ApostilaPDF song={apostilaSong} onClose={() => setApostilaSong(null)} />}
             <SongInfoModal song={infoSong} open={!!infoSong} onClose={() => setInfoSong(null)} />
           </>

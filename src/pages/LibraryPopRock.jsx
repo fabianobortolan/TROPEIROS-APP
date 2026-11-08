@@ -19,7 +19,7 @@ import SongDetails from "../components/songs/SongDetails";
 import ApostilaPDF from "../components/songs/ApostilaPDF";
 import CompareAnalyses from "../components/analysis/CompareAnalyses";
 import SimilarityAnalysis from "../components/analysis/SimilarityAnalysis";
-import StageModeView from "../components/songs/StageModeView";
+import PalcoView from "../components/palco/PalcoView";
 import CadernosManager from "../components/cadernos/CadernosManager";
 import SongInfoModal from "../components/songs/SongInfoModal";
 import LibraryApostila from "../components/songs/LibraryApostila";
@@ -345,7 +345,7 @@ export default function LibraryPopRock() {
             {selectedSong && <SongDetails song={selectedSong} initialTab={songInitialTab} onClose={() => { setSelectedSong(null); setSongInitialTab("cifra"); refetchSongs(); queryClient.invalidateQueries({ queryKey: ['songs'] }); }} />}
             {showComparison && <CompareAnalyses onClose={() => { setShowComparison(false); setComparisonSongs({ song1: null, song2: null }); }} initialSong1={comparisonSongs.song1} initialSong2={comparisonSongs.song2} />}
             {showSimilarity && <SimilarityAnalysis onClose={() => setShowSimilarity(false)} onSelectSongs={(song1, song2) => { setComparisonSongs({ song1: song1.id, song2: song2.id }); setShowComparison(true); }} />}
-            {stageSong && <StageModeView song={stageSong} onClose={() => setStageSong(null)} />}
+            {stageSong && <PalcoView songs={[stageSong]} onClose={() => setStageSong(null)} />}
             {apostilaSong && <ApostilaPDF song={apostilaSong} onClose={() => setApostilaSong(null)} />}
             <SongInfoModal song={infoSong} open={!!infoSong} onClose={() => setInfoSong(null)} />
           </>

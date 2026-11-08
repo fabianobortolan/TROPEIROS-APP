@@ -10,7 +10,7 @@ import {
   Target, Clock, CheckCircle, Plus, BookOpen, Brain, Play
 } from "lucide-react";
 import { motion } from "framer-motion";
-import StageView from "../setlists/StageView";
+import PalcoView from "../palco/PalcoView";
 
 const STORAGE_KEY = 'ai_training_preferences';
 
@@ -488,11 +488,8 @@ Use APENAS músicas que existem no repertório do aluno (IDs fornecidos).`;
 
       {/* Modo Palco para Sequência de Estudo */}
       {showStageView && recommendations?.study_sequence?.length > 0 && (
-        <StageView
-          setlist={{
-            name: "Sequência de Estudo Recomendada",
-            songs: recommendations.study_sequence.map(item => item.song?.id).filter(Boolean)
-          }}
+        <PalcoView
+          titulo="Sequência de estudo"
           songs={recommendations.study_sequence.map(item => item.song).filter(Boolean)}
           onClose={() => setShowStageView(false)}
         />
