@@ -314,11 +314,11 @@ export default function LibrarySambaMPB() {
                 </Link>
               </motion.div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5">
+              <div className="flex flex-col gap-1.5">
                 {groupedSongs.map((row, index) => {
                   if (row.type === "header") {
                     return (
-                      <div key={`header-${row.genre}`} className="lg:col-span-2 flex items-center gap-3 pt-3 pb-1">
+                      <div key={`header-${row.genre}`} className="flex items-center gap-3 pt-3 pb-1">
                         <span className="text-xs font-bold px-3 py-1 rounded-full border bg-blue-100 text-blue-900 border-blue-200">
                           {genreLabels[row.genre] || row.genre}
                         </span>

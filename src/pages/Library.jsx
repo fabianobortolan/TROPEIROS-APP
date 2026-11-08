@@ -506,7 +506,7 @@ export default function Library() {
             </Link>
           </motion.div> :
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5">
+          <div className="flex flex-col gap-1.5">
             {filteredSongs.map((song) => (
               <SongRow
                 key={song.id}
