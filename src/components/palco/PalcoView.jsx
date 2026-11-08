@@ -12,7 +12,7 @@ import { simplificarCifra, NIVEIS_SIMPLIFICACAO, lerNivelSimplificacao, gravarNi
 // ---------------------------------------------------------------------------
 // MODO PALCO — uma tela só para tocar ao vivo.
 // • Uma música (biblioteca) ou um repertório inteiro (anterior/próxima).
-// • Rolagem automática com velocidade ajustável, espera opcional antes de rolar.
+// • Rolagem automática com velocidade ajustável; contagem de 3 s (ajustável) antes de rolar.
 // • Letra ajustada à largura da tela (acordes não desalinham); A−/A+ para ajustar.
 // • Tom − / + na hora. Tela não apaga. Tema escuro, claro ou alto contraste.
 // • Pedal bluetooth / teclado: ↓ PgDn Espaço = desce uma tela; ↑ PgUp = sobe;
@@ -29,7 +29,8 @@ const TEMAS = {
 
 const VEL_MIN = 10, VEL_MAX = 200, VEL_PASSO = 5;
 const FONTE_MIN = 12, FONTE_MAX = 44;
-const ESPERAS = [0, 5, 10, 15, 20, 30, 45];
+const ESPERAS = [0, 3, 5, 10, 15, 20, 30];
+const ESPERA_PADRAO = 3; // segundos de contagem antes de começar a rolar
 
 // Valores antigos (0,5 etc.) eram de outra escala: usa 40 como padrão
 const velInicial = (s) => {
@@ -45,11 +46,11 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
   const [indice, setIndice] = useState(Math.min(Math.max(startIndex, 0), Math.max(lista.length - 1, 0)));
   const song = lista[indice];
 
-  const [global, setGlobal] = useState(() => lerJSON("palco:global", { tema: "escuro", nomesPT: false }));
+  const [global, setGlobal] = useState(() => lerJSON("palco:global", { tema: "escuro", nomesPT: false, espera: ESPERA_PADRAO }));
   const [nivelSimpl, setNivelSimpl] = useState(lerNivelSimplificacao);
   const mudarNivelSimpl = (v) => { setNivelSimpl(v); gravarNivelSimplificacao(v); };
   const prefsPadrao = useCallback((s) => ({
-    vel: velInicial(s), fonte: null, semitons: 0, espera: 0,
+    vel: velInicial(s), fonte: null, semitons: 0,
   }), []);
   const [prefs, setPrefs] = useState(() => lerJSON(`palco:${song?.id}`, prefsPadrao(song)));
 
@@ -216,9 +217,13 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
     if (rolando || contagem > 0) { setRolando(false); setContagem(0); return; }
     const area = areaRef.current;
     if (area && area.scrollTop + area.clientHeight >= area.scrollHeight - 2) area.scrollTop = 0;
-    if (prefs.espera > 0 && area && area.scrollTop === 0) setContagem(prefs.espera);
+    // Contagem antes de rolar: a espera escolhida no começo da música;
+    // ao continuar do meio (depois de pausar), no máximo 3 s
+    const espera = Number(global.espera) || 0;
+    const segundos = area && area.scrollTop <= 2 ? espera : Math.min(espera, 3);
+    if (segundos > 0) setContagem(segundos);
     else setRolando(true);
-  }, [rolando, contagem, prefs.espera]);
+  }, [rolando, contagem, global.espera]);
 
   const irPara = useCallback((i) => { if (i >= 0 && i < lista.length) setIndice(i); }, [lista.length]);
   const pagina = useCallback((dir) => {
@@ -500,11 +505,12 @@ export default function PalcoView({ songs = [], startIndex = 0, titulo, onClose 
             </Linha>
 
             <div>
-              <div className="font-semibold mb-2">Espera antes de rolar</div>
+              <div className="font-semibold">Contagem antes de rolar</div>
+              <div className="text-sm opacity-70 mb-2">Depois do play, conta alguns segundos antes de começar. Vale para todas as músicas.</div>
               <div className="flex flex-wrap gap-2">
                 {ESPERAS.map((s) => (
-                  <button key={s} type="button" onClick={() => mudarPrefs({ espera: s })} className="h-10 px-3 rounded-xl text-sm font-semibold"
-                    style={prefs.espera === s ? { background: t.acorde, color: t.fundo } : botao}>
+                  <button key={s} type="button" onClick={() => mudarGlobal({ espera: s })} className="h-10 px-3 rounded-xl text-sm font-semibold"
+                    style={(Number(global.espera) || 0) === s ? { background: t.acorde, color: t.fundo } : botao}>
                     {s === 0 ? "Sem espera" : `${s} s`}
                   </button>
                 ))}
