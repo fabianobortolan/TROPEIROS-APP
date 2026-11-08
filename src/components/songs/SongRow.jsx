@@ -66,7 +66,7 @@ const TEMAS = {
 
 export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo, onApostila, onEditChords, onTocarJunto }) {
   const t = TEMAS[tema] || TEMAS.claro;
-  const temTab = !!parseSoloTab(song.solo_tab);
+  const temTab = !!parseSoloTab(song.solo_tab) || !!song.playback_url;
   const prog = progressaoPredominante(song);
   const acordes = primeirosAcordes(song);
   const meta = [tituloLegivel(song.rhythm_name), tituloLegivel(prog), acordes.length ? acordes.join("–") : null].filter(Boolean).join(" · ");
@@ -115,7 +115,7 @@ export default function SongRow({ song, tema = "claro", onOpen, onStage, onInfo,
           onClick={pare(onTocarJunto)}
           className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full ${t.pill}`}
           aria-label={`Tocar junto: ${tituloLegivel(song.title)}`}
-          title="Tocar junto — tablatura do solo"
+          title={song.playback_url ? "Tocar junto — playback e solo" : "Tocar junto — tablatura do solo"}
         >
           <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
         </button>
