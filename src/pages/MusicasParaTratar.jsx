@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useOfflineSync } from "../components/utils/useOfflineSync";
-import { Search, Check, ChevronRight, X, ListChecks, Loader2 } from "lucide-react";
+import { Search, Check, ChevronRight, X, ListChecks, Loader2, Sparkles } from "lucide-react";
 import SongRow, { tituloLegivel } from "../components/songs/SongRow";
 import SongDetails from "../components/songs/SongDetails";
 import PalcoView from "../components/palco/PalcoView";
@@ -41,6 +41,8 @@ const semAcento = (t) => (t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLo
 export default function MusicasParaTratar() {
   const queryClient = useQueryClient();
   useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me() });
+  const { data: ritmos = [] } = useQuery({ queryKey: ["rhythms"], queryFn: () => base44.entities.Rhythm.list("name", 200) });
+  const [lote, setLote] = useState(null); // { feitas, total } durante "confirmar todas"
   const { data: todas, isLoading, reload } = useOfflineSync("songs", () => base44.fetchAllSongs());
   const [filtro, setFiltro] = useState("nao_revisadas");
   const [biblioteca, setBiblioteca] = useState("todas");
@@ -106,6 +108,44 @@ export default function MusicasParaTratar() {
     queryClient.invalidateQueries({ queryKey: ["songs"] });
     reload?.();
   };
+  // Ritmo: grava o escolhido e apaga a sugestão
+  const aplicarRitmo = async (song, ritmo) => {
+    const patch = { rhythm_name: (ritmo.name || "").trim(), rhythm_id: ritmo.id, rhythm_suggestion: null };
+    await base44.entities.Song.update(song.id, patch);
+    setAjustes((a) => ({ ...a, [song.id]: { ...(a[song.id] || {}), ...patch } }));
+  };
+  const confirmarSugestao = async (song) => {
+    const sug = song.rhythm_suggestion;
+    if (!sug?.id) return;
+    try { await aplicarRitmo(song, { id: sug.id, name: sug.name }); }
+    catch { alert("Não consegui gravar o ritmo. Confira a internet e tente de novo."); }
+  };
+  const trocarRitmo = async (song, id) => {
+    const r = ritmos.find((x) => x.id === id);
+    if (!r) return;
+    try { await aplicarRitmo(song, r); }
+    catch { alert("Não consegui gravar o ritmo. Confira a internet e tente de novo."); }
+  };
+  const altas = lista.filter((s) => vazio(s.rhythm_name) && s.rhythm_suggestion?.confianca === "alta");
+  const confirmarTodasAltas = async () => {
+    if (!altas.length) return;
+    if (!window.confirm(`Confirmar o ritmo sugerido em ${altas.length} música${altas.length === 1 ? "" : "s"} (só as de confiança alta)?`)) return;
+    const fila2 = [...altas];
+    let feitas = 0, erros = 0;
+    setLote({ feitas: 0, total: fila2.length });
+    const trabalhador = async () => {
+      while (fila2.length) {
+        const s2 = fila2.shift();
+        try { await aplicarRitmo(s2, { id: s2.rhythm_suggestion.id, name: s2.rhythm_suggestion.name }); } catch { erros++; }
+        feitas++;
+        setLote({ feitas, total: altas.length });
+      }
+    };
+    await Promise.all([trabalhador(), trabalhador(), trabalhador(), trabalhador()]);
+    setLote(null);
+    if (erros) alert(`${erros} música(s) não foram gravadas (internet?). Tente de novo.`);
+  };
+
   const revisadaEProxima = async () => {
     if (!aberta) return;
     setSalvando(true);
@@ -195,10 +235,22 @@ export default function MusicasParaTratar() {
           <div className="py-16 text-center text-[#8B7355]">Nenhuma música neste filtro. 🎉</div>
         ) : (
           <>
-            <p className="text-xs text-[#8B7355] mb-2">{lista.length} música{lista.length === 1 ? "" : "s"}</p>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <p className="text-xs text-[#8B7355]">{lista.length} música{lista.length === 1 ? "" : "s"}</p>
+              {filtro === "sem_ritmo" && altas.length > 0 && (
+                <button type="button" onClick={confirmarTodasAltas} disabled={!!lote} className="h-9 px-3 rounded-xl text-sm font-semibold bg-[#6B8E4E] text-white disabled:opacity-60 flex items-center gap-1.5">
+                  {lote ? <><Loader2 className="w-4 h-4 animate-spin" />{lote.feitas} de {lote.total}</> : <><Check className="w-4 h-4" />Confirmar as {altas.length} de confiança alta</>}
+                </button>
+              )}
+            </div>
             <div className="flex flex-col gap-1.5">
               {lista.map((s) => (
-                <SongRow key={s.id} song={s} tema="claro" onOpen={abrir} onStage={setPalco} />
+                <div key={s.id}>
+                  <SongRow song={s} tema="claro" onOpen={abrir} onStage={setPalco} />
+                  {filtro === "sem_ritmo" && (
+                    <LinhaSugestao song={s} ritmos={ritmos} onConfirmar={confirmarSugestao} onTrocar={trocarRitmo} />
+                  )}
+                </div>
               ))}
             </div>
           </>
@@ -229,6 +281,53 @@ export default function MusicasParaTratar() {
       )}
 
       {palco && <PalcoView songs={[palco]} onClose={() => setPalco(null)} />}
+    </div>
+  );
+}
+
+const CONF = {
+  alta: { rotulo: "confiança alta", cor: "bg-[#E7F0DF] text-[#3F6B2A]" },
+  media: { rotulo: "confiança média", cor: "bg-[#FFF3D6] text-[#8A6100]" },
+  baixa: { rotulo: "confira", cor: "bg-[#FBE4DC] text-[#9A3B1E]" },
+};
+
+function LinhaSugestao({ song, ritmos, onConfirmar, onTrocar }) {
+  const [gravando, setGravando] = useState(false);
+  const sug = song.rhythm_suggestion;
+  const feito = !vazio(song.rhythm_name);
+  const conf = CONF[sug?.confianca] || CONF.baixa;
+  const rodar = async (fn) => { setGravando(true); try { await fn(); } finally { setGravando(false); } };
+  const opcoes = [...ritmos].sort((a, b) => (a.name || "").localeCompare(b.name || "", "pt-BR"));
+  return (
+    <div className="mx-2 -mt-1 mb-1 px-3 pt-2.5 pb-2 rounded-b-xl bg-[#F6EFE0] border border-t-0 border-[#E6DCC8] flex flex-wrap items-center gap-2 text-sm">
+      {feito ? (
+        <span className="text-[#3F6B2A] font-medium flex items-center gap-1"><Check className="w-4 h-4" />Ritmo: {song.rhythm_name}</span>
+      ) : (
+        <>
+          <Sparkles className="w-4 h-4 text-[#B8860B] flex-shrink-0" />
+          {sug ? (
+            <>
+              <span className="text-[#3D2E1F]">Sugestão: <b>{sug.name}</b></span>
+              <span className={`text-[11px] px-1.5 py-0.5 rounded-full ${conf.cor}`}>{conf.rotulo}</span>
+              <button type="button" disabled={gravando} onClick={() => rodar(() => onConfirmar(song))} className="h-8 px-2.5 rounded-lg bg-[#6B8E4E] text-white font-medium flex items-center gap-1 disabled:opacity-60">
+                {gravando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}Confirmar
+              </button>
+            </>
+          ) : (
+            <span className="text-[#8B7355]">Sem sugestão</span>
+          )}
+          <select
+            value=""
+            disabled={gravando}
+            onChange={(e) => { const id = e.target.value; if (id) rodar(() => onTrocar(song, id)); }}
+            className="h-8 px-2 rounded-lg border border-[#E6DCC8] bg-[#FFFDF8] text-[#6B4F2E] text-sm"
+            aria-label={`Escolher outro ritmo para ${song.title}`}
+          >
+            <option value="">{sug ? "Trocar…" : "Escolher ritmo…"}</option>
+            {opcoes.map((r) => <option key={r.id} value={r.id}>{(r.name || "").trim()}</option>)}
+          </select>
+        </>
+      )}
     </div>
   );
 }
