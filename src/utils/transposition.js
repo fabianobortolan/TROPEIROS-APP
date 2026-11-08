@@ -61,7 +61,7 @@ export const CHORD_TOKEN_RE =
  * Sem `\b` no final (o bug dos sustenidos) — a raiz consome o acidente.
  */
 const CHORD_INLINE_RE =
-  /\b([A-G][#b]?)(m(?:aj)?|M7?|dim|aug|sus[24]?|add\d+|°|º|\+)?(\d+(?:M)?)?((?:sus[24]?|add\d+|°|º|\+|b\d+|#\d+)*)(\([^)]*\))*(\/[A-G][#b]?)?/g;
+  /\b([A-G][#b]?)(m(?:aj)?|M7?|dim|aug|sus[24]?|add\d+|°|º|\+)?(\d+(?:M)?)?((?:sus[24]?|add\d+|°|º|\+|b\d+|#\d+)*)(\([^)]*\))*(\/[A-G][#b]?)?(?=$|[\s)\]|,.;:!\-–/])/g;
 
 function noteIndex(key) {
   const { root } = parseKey(key);
@@ -142,6 +142,32 @@ export function chordStartIndex(line) {
  * Aceita prefixo `[SEÇÃO]` seguido de acordes na mesma linha.
  * Funciona mesmo com letras em MAIÚSCULAS (a app usa "Caixa Alta").
  */
+// Aceita também a escrita brasileira: E7/9, Cm7/9, C#m5-/7, A7+ …
+function ehAcorde(t) {
+  if (!t) return false;
+  if (CHORD_TOKEN_RE.test(t)) return true;
+  const br = t.replace(/(\d)[-+](?=\/|$)/g, '$1').replace(/\/\d+[-+]?/g, '');
+  return br !== t && CHORD_TOKEN_RE.test(br);
+}
+
+// 'acorde' | 'neutro' (repetição, setas, barras) | 'outro'
+function classificarToken(tok) {
+  if (ehAcorde(tok)) return 'acorde';
+  if (/^\(?[x×]?\d+[x×]\)?[:.]?$/i.test(tok) || /^[-–>|/!:.()\[\]]+$/.test(tok)) return 'neutro'; // 2x, (3x), x2, ---, |, ->
+  // "D-2X", "Am-4x": acorde seguido de repetição
+  const rep = tok.match(/^(.+?)-+\(?\d+[x×]\)?$/i);
+  if (rep && ehAcorde(rep[1])) return 'acorde';
+  // "Em---D", "G--A": sequência de acordes ligada por traços
+  if (/-{2,}/.test(tok)) {
+    const partes = tok.split(/-{2,}/).filter(Boolean);
+    if (partes.length && partes.every(ehAcorde)) return 'acorde';
+  }
+  const t = tok.replace(/^[([{<]+|[)\]}>,.;:!]+$/g, '');
+  if (!t) return 'neutro';
+  if (t === '%') return 'acorde'; // repetição do acorde anterior
+  return ehAcorde(t) ? 'acorde' : 'outro';
+}
+
 export function isChordLine(line) {
   if (!line) return false;
   const trimmed = line.trim();
@@ -151,18 +177,14 @@ export function isChordLine(line) {
   if (!rest) return false; // só havia a tag de seção
   const tokens = rest.split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return false;
-  let chordCount = 0;
+  let chordCount = 0, neutros = 0;
   for (const tok of tokens) {
-    // Primeiro testa o token como está: "Am7(9)" termina em ")" e é acorde válido.
-    // Só depois tenta sem pontuação em volta ("(C)", "G," etc.).
-    if (CHORD_TOKEN_RE.test(tok)) { chordCount++; continue; }
-    const t = tok.replace(/^[([{<]+|[)\]}>,.;:]+$/g, '');
-    if (!t) continue;
-    if (t === '%') { chordCount++; continue; } // repetição do acorde anterior
-    if (CHORD_TOKEN_RE.test(t)) chordCount++;
+    const r = classificarToken(tok);
+    if (r === 'neutro') { neutros++; continue; }
+    if (r === 'acorde') chordCount++;
   }
   if (chordCount === 0) return false;
-  return chordCount / tokens.length >= 0.6;
+  return chordCount / Math.max(1, tokens.length - neutros) >= 0.6;
 }
 
 /**

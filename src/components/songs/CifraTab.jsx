@@ -154,7 +154,7 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
               <ArrowUpDown className="w-4 h-4" /> Mudar tom
             </button>
           )}
-          {podeSimplificar && (
+          {viewText && (
             <button
               type="button"
               onClick={() => setMostrarSimplificar((v) => !v)}
@@ -212,7 +212,7 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
       )}
 
       {/* Simplificar acordes (só muda a visualização; a cifra gravada continua igual) */}
-      {!isEditing && podeSimplificar && mostrarSimplificar && (
+      {!isEditing && textoBase && mostrarSimplificar && (
         <div className="rounded-2xl border border-[#E6DCC8] bg-[#FFFDF8] p-3">
           <div className="flex gap-1.5">
             {NIVEIS_SIMPLIFICACAO.map((n) => (
@@ -226,6 +226,9 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
               </button>
             ))}
           </div>
+          {!podeSimplificar && (
+            <p className="text-sm text-[#3F6B2A] font-medium mt-2">✓ Esta música já usa só acordes básicos — não há o que simplificar.</p>
+          )}
           <p className="text-xs text-[#8B7355] mt-2">
             {nivel === "iniciante"
               ? "Só acordes maiores, menores e com 7 (ex.: Am7 vira Am, G7(9) vira G7)."

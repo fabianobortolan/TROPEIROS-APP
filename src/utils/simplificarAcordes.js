@@ -18,8 +18,9 @@ export const NIVEIS_SIMPLIFICACAO = [
 
 // Mesmo formato reconhecido pelo transpositor:
 // 1=raiz, 2=qualidade, 3=número, 4=alterações, 5=parênteses, 6=baixo
+// 7=sinal brasileiro (5-, 7+), 8=números com barra (E7/9, C#m5-/7)
 const ACORDE_RE =
-  /\b([A-G][#b]?)(m(?:aj)?|M7?|dim|aug|sus[24]?|add\d+|°|º|\+)?(\d+(?:M)?)?((?:sus[24]?|add\d+|°|º|\+|b\d+|#\d+)*)((?:\([^)]*\))*)(\/[A-G][#b]?)?/g;
+  /\b([A-G][#b]?)(m(?:aj)?|M7?|dim|aug|sus[24]?|add\d+|°|º|\+)?(\d+(?:M)?)?((?:sus[24]?|add\d+|°|º|\+|b\d+|#\d+)*)((?:\([^)]*\))*)((?<=\d)[-+](?=[\s/()]|$))?((?:\/\d+[-+]?)*)(\/[A-G][#b]?)?(?=$|[\s)\]|,.;:!\-–/])/g;
 
 export function simplificarAcorde(acorde, nivel = "simples") {
   if (!nivel || !acorde) return acorde;
@@ -30,15 +31,18 @@ export function simplificarAcorde(acorde, nivel = "simples") {
 }
 
 function montar(m, nivel) {
-  const [, raiz, qual = "", num = "", alt = "", par = ""] = m;
-  const extras = `${alt}${par}`;
+  const [, raiz, qual = "", num = "", alt = "", par = "", sinal = "", barras = ""] = m;
+  const extras = `${alt}${par}${barras}`;
   const ehMaj = qual === "maj" || qual === "M" || qual === "M7" || /M$/.test(num);
   const menor = qual === "m";
   const dim = qual === "dim" || qual === "°" || qual === "º" || /[°º]/.test(extras);
-  const aum = qual === "aug" || qual === "+" || /\+/.test(extras);
-  const temB5 = /b5/.test(extras);
-  const n = parseInt(num, 10);
-  const tem7 = !ehMaj && (n === 7 || n === 9 || n === 11 || n === 13); // 9/11/13 sem M já trazem o 7
+  const seteMais = num === "7" && (sinal === "+" || alt.startsWith("+")); // "7+" = 7M na escrita brasileira
+  const aum = !seteMais && (qual === "aug" || qual === "+" || /\+/.test(extras) || (sinal === "+" && num === "5"));
+  const temB5 = /b5|5-/.test(`${extras}${num}${sinal}`);
+  const numeros = [num, ...(barras.match(/\d+/g) || [])].map((x) => parseInt(x, 10)).filter((x) => !Number.isNaN(x));
+  // 9/11/13 sem M já trazem o 7; "7+" (escrita brasileira) é 7M
+  const ehMaj2 = ehMaj || seteMais;
+  const tem7 = !ehMaj2 && numeros.some((x) => x === 7 || x === 9 || x === 11 || x === 13);
 
   if (dim) return `${raiz}°`;
   if (menor) {
@@ -46,7 +50,7 @@ function montar(m, nivel) {
     if (tem7 && nivel === "simples") return `${raiz}m7`;
     return `${raiz}m`;
   }
-  if (aum) return nivel === "iniciante" ? raiz : `${raiz}+`;
+  if (aum && !ehMaj2) return nivel === "iniciante" ? raiz : `${raiz}+`;
   if (tem7) return `${raiz}7`; // dominante: G7, G7(9), G13, G7sus4 → G7
   return raiz; // maior: C7M, C6, Cadd9, Csus4, C(9) → C
 }
