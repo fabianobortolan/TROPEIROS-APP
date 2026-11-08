@@ -31,6 +31,8 @@ import StageModeView from "../components/songs/StageModeView";
 import CadernosManager from "../components/cadernos/CadernosManager";
 import HarmonicSetlistAnalyzer from "../components/analysis/HarmonicSetlistAnalyzer";
 import EditChordsModal from "../components/songs/EditChordsModal";
+import SongRow from "../components/songs/SongRow";
+import LibraryHeader from "../components/songs/LibraryHeader";
 import EnriquecerDadosModal from "../components/songs/EnriquecerDadosModal";
 import BuscarCifraModal from "../components/songs/BuscarCifraModal";
 
@@ -312,93 +314,28 @@ export default function Library() {
   }, [refetchSongs]);
 
   return (
-    <div className="bg-amber-50 p-4 min-h-screen md:p-8">
+    <div className="bg-[#FBF6EA] px-4 py-4 min-h-screen md:p-8">
       <div className="w-full">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-4 md:mb-8">
 
-          <div className="flex flex-col gap-2 md:gap-4 mb-4 md:mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <div className="flex items-center gap-2">
-                  <Guitar className="w-8 h-8 text-[#8B6F47]" />
-                  <h1 className="text-2xl md:text-4xl font-bold text-[#8B6F47]" style={{ letterSpacing: '0.5px' }}>
-                    Biblioteca Sertaneja
-                  </h1>
-                </div>
-                <Badge className="bg-gradient-to-r from-[#8B6F47] to-[#A68A64] text-white text-sm md:text-base px-3 py-1">
-                  {songs.length} {songs.length === 1 ? 'música' : 'músicas'}
-                </Badge>
-              </div>
-              <p className="text-xs md:text-base text-[#A68A64] hidden md:block">Análise individual por seção + progressão predominante</p>
-            </div>
-
-            <OfflineBanner isOffline={isOffline} isSyncing={isSyncing} pendingCount={0} />
-
-            <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-              {currentUser?.role === 'admin' && (
-                <Link to={createPageUrl("Analyze")} style={{ flex: 1 }}>
-                  <button style={{ width: '100%' }} className="h-10 text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 bg-gradient-to-r from-[#8B6F47] to-[#A68A64] hover:from-[#A68A64] hover:to-[#8B6F47] text-white shadow-md transition-all">
-                    <Upload className="w-4 h-4 flex-shrink-0" />
-                    <span>Adicionar Música</span>
-                  </button>
-                </Link>
-              )}
-
-              {currentUser?.role === 'admin' && (
-                <button
-                  onClick={recalculatePredominant}
-                  disabled={recalculating}
-                  style={{ flex: 1 }}
-                  className="h-10 text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white transition-all bg-white disabled:opacity-50">
-                  <TrendingUp className={`w-4 h-4 flex-shrink-0 ${recalculating ? 'animate-spin' : ''}`} />
-                  <span>Recalcular</span>
-                </button>
-              )}
-              {currentUser?.role === 'admin' && (
-                <button
-                  onClick={() => setShowEnriquecer(true)}
-                  style={{ flex: 1 }}
-                  className="h-10 text-xs md:text-sm font-semibold rounded-xl flex items-center justify-center gap-1 border border-purple-400 text-purple-600 hover:bg-purple-500 hover:text-white transition-all bg-white">
-                  <Sparkles className="w-4 h-4 flex-shrink-0" />
-                  <span>Enriquecer</span>
-                </button>
-              )}
-              {/* Ferramentas só para quem entrou no app (visitante vê só a lista de músicas) */}
-              {currentUser && (<>
-              <button
-                onClick={() => setShowHarmonicAnalyzer(true)}
-                style={{ flex: 1 }}
-                className="h-10 rounded-xl text-xs md:text-sm font-semibold transition-all bg-[#E8DCC4] text-[#A68A64] hover:text-[#8B6F47] flex items-center justify-center gap-1">
-                <ListMusic className="w-4 h-4" />
-                Compatibilidade
-              </button>
-              <button
-                onClick={() => setShowLibraryApostila(true)}
-                style={{ flex: 1 }}
-                className="h-10 rounded-xl text-xs md:text-sm font-semibold transition-all bg-gradient-to-r from-[#8B6F47] to-[#D4AF37] text-white shadow-md hover:opacity-90 flex items-center justify-center gap-1">
-                <BookMarked className="w-4 h-4 flex-shrink-0" />
-                Apostila
-              </button>
-              <button
-                onClick={() => setActiveTab('biblioteca')}
-                style={{ flex: 1 }}
-                className={`h-10 rounded-xl text-xs md:text-sm font-semibold transition-all ${activeTab === 'biblioteca' ? 'bg-[#8B6F47] text-white shadow' : 'bg-[#E8DCC4] text-[#A68A64] hover:text-[#8B6F47]'}`}>
-                Minhas Músicas
-              </button>
-              <button
-                onClick={() => setActiveTab('cadernos')}
-                style={{ flex: 1 }}
-                className={`h-10 rounded-xl text-xs md:text-sm font-semibold transition-all ${activeTab === 'cadernos' ? 'bg-[#8B6F47] text-white shadow' : 'bg-[#E8DCC4] text-[#A68A64] hover:text-[#8B6F47]'}`}>
-                Cadernos de Cifras
-              </button>
-              </>)}
-            </div>
-
-
-          </div>
+          <LibraryHeader
+            atual="sertaneja"
+            contagem={songs.length}
+            tema="claro"
+            logado={!!currentUser}
+            isAdmin={currentUser?.role === 'admin'}
+            onApostila={() => setShowLibraryApostila(true)}
+            abas={{ atual: activeTab === 'cadernos' ? 'cadernos' : 'biblioteca', mudar: setActiveTab }}
+            ferramentas={[
+              { label: 'Compatibilidade de repertório', icon: ListMusic, onClick: () => setShowHarmonicAnalyzer(true) },
+              { label: recalculating ? 'Recalculando…' : 'Recalcular progressões', icon: TrendingUp, onClick: recalculatePredominant, disabled: recalculating, adminOnly: true },
+              { label: 'Enriquecer dados', icon: Sparkles, onClick: () => setShowEnriquecer(true), adminOnly: true },
+            ]}
+          />
+          <OfflineBanner isOffline={isOffline} isSyncing={isSyncing} pendingCount={0} />
         </motion.div>
 
         {activeTab === 'cadernos' ? (
@@ -410,7 +347,7 @@ export default function Library() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/60 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 mb-4 md:mb-8 border border-[#D4C5B0] shadow-lg">
+            className="mb-3">
 
           <div className="flex flex-col gap-2 md:gap-4">
             <div className="flex gap-2">
@@ -569,182 +506,20 @@ export default function Library() {
             </Link>
           </motion.div> :
 
-          <div className="space-y-2">
-            {filteredSongs.map((song, index) => {
-              const totalSections = song.progressions?.length || 0;
-
-              return (
-                <motion.div
-                  key={song.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.03 }}>
-
-                  <Card
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 border-[#D4C5B0] bg-white/80 backdrop-blur-sm overflow-hidden group relative"
-                    onClick={() => setSelectedSong(song)}>
-
-                    {/* Corda decorativa topo */}
-                    <div className="absolute top-0 left-0 right-0 h-[10px] z-10 pointer-events-none"
-                      style={{
-                        backgroundImage: `url('/img/bfcd67933_image.png')`,
-                        backgroundRepeat: 'repeat-x',
-                        backgroundSize: 'auto 10px',
-                      }}
-                    />
-                    {/* Corda decorativa base */}
-                    <div className="absolute bottom-0 left-0 right-0 h-[10px] z-10 pointer-events-none"
-                      style={{
-                        backgroundImage: `url('/img/bfcd67933_image.png')`,
-                        backgroundRepeat: 'repeat-x',
-                        backgroundSize: 'auto 10px',
-                      }}
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#8B6F47]/5 to-[#9CAF88]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                    <CardContent className="p-3 pt-4 pb-3 relative">
-                      <div className="flex flex-col gap-1.5">
-                        {/* Linha do título com Tom no canto superior esquerdo */}
-                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setSelectedSong(song)}>
-                          <div
-                            className="w-8 h-8 bg-gradient-to-br from-[#D4AF37] to-[#9CAF88] rounded-lg flex items-center justify-center shadow flex-shrink-0 cursor-pointer hover:scale-110 transition-transform"
-                            onClick={(e) => { e.stopPropagation(); setStageSong(song); }}
-                            title="🎸 Modo de Palco">
-                            <Music className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-bold text-base text-[#8B6F47] uppercase flex items-center gap-1.5" style={{ letterSpacing: '0.5px' }}>
-                              {song.is_fully_revised && (
-                                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" title="Música totalmente revisada" />
-                              )}
-                              {song.validation_severity && song.validation_severity !== 'ok' && (() => {
-                                const sev = song.validation_severity;
-                                const color = sev === 'critico' ? 'text-red-600' : sev === 'suspeito' ? 'text-orange-500' : 'text-amber-500';
-                                const bg = sev === 'critico' ? 'bg-red-100 text-red-700' : sev === 'suspeito' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700';
-                                const label = sev === 'critico' ? 'Cifra crítica' : sev === 'suspeito' ? 'Cifra suspeita' : 'Atenção na cifra';
-                                return (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setInfoSong(song); }}
-                                    className={`flex items-center gap-0.5 ${color} flex-shrink-0 hover:scale-110 transition-transform`}
-                                    title={`${label} — clique para ver os alertas`}
-                                  >
-                                    <AlertTriangle className="w-4 h-4" />
-                                    {(song.validation_issues || []).length > 0 && (
-                                      <span className={`text-[9px] font-bold rounded-full px-1 leading-tight ${bg}`}>
-                                        {(song.validation_issues || []).length}
-                                      </span>
-                                    )}
-                                  </button>
-                                );
-                              })()}
-                              <span className="truncate">{song.title}</span>
-                            </h3>
-                            <p className="text-sm text-[#A68A64] truncate">{song.artist}</p>
-                          </div>
-                          {/* Tom - canto superior direito */}
-                          <div
-                            className="flex-shrink-0 flex flex-col items-center justify-center px-2 py-0.5 bg-[#9CAF88]/10 rounded-lg border border-[#9CAF88]/30 text-center min-w-[40px]"
-                            onClick={(e) => { e.stopPropagation(); setSelectedSong(song); }}>
-                            <p className="text-[9px] text-[#A68A64] leading-none">Tom</p>
-                            <p className="text-xs font-bold text-[#8B6F47] flex items-center gap-0.5">
-                              {song.main_key || "N/A"}
-                              {song.progressions?.some((p) => p.modulated_key) &&
-                                <RefreshCw className="w-2 h-2 text-orange-500" />
-                              }
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* 6 botões em linha: Prog, Ritmo, Acordes, Info, Apostila, Tocar */}
-                        <div className="grid grid-cols-6 gap-1">
-                          {/* Progressão - calculada em tempo real das progressões reais */}
-                          {(() => {
-                            const prog = getComputedPredominant(song);
-                            return (
-                              <div
-                                className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center cursor-pointer ${prog ? "bg-gradient-to-r from-[#D4AF37]/20 to-[#9CAF88]/20 border border-[#D4AF37]/50" : "bg-gray-100 border border-gray-300"}`}
-                                onClick={() => setSelectedSong(song)}>
-                                <p className={`text-[9px] leading-none ${prog ? "text-[#A68A64]" : "text-gray-500"}`}>Prog.</p>
-                                <p className={`text-[10px] font-bold truncate w-full text-center ${prog ? "text-[#8B6F47]" : "text-gray-500"}`}>
-                                  {prog || "N/A"}
-                                </p>
-                              </div>
-                            );
-                          })()}
-
-                          {/* Ritmo */}
-                          <div
-                            className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center cursor-pointer ${song.rhythm_name ? "bg-gradient-to-r from-[#8B6F47] to-[#A68A64] border border-[#8B6F47] shadow" : "bg-gray-100 border border-gray-300"}`}
-                            onClick={() => setSelectedSong(song)}>
-                            <p className={`text-[9px] leading-none ${song.rhythm_name ? "text-white/90" : "text-gray-500"}`}>Ritmo</p>
-                            <p className={`text-[10px] font-bold truncate w-full text-center ${song.rhythm_name ? "text-white" : "text-gray-500"}`}>
-                              {song.rhythm_name || "N/A"}
-                            </p>
-                          </div>
-
-                          {/* Acordes */}
-                          {(() => {
-                            // Coleta acordes reais de todas as progressões da música
-                            const allChords = [];
-                            const seen = new Set();
-                            (song.progressions || []).forEach(prog => {
-                              (Array.isArray(prog.chords) ? prog.chords : []).forEach(c => {
-                                if (c && !seen.has(c)) { seen.add(c); allChords.push(c); }
-                              });
-                            });
-                            const hasChords = allChords.length > 0;
-                            const display = hasChords ? allChords.slice(0, 4).join('-') : "N/A";
-                            return (
-                              <div
-                                className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${hasChords ? "bg-[#9CAF88]/10 border border-[#9CAF88]/30" : "bg-gray-100 border border-gray-300"}`}
-                                title="Clique para editar acordes"
-                                onClick={(e) => { e.stopPropagation(); setEditChordsSong(song); }}>
-                                <p className={`text-[9px] leading-none ${hasChords ? "text-[#A68A64]" : "text-gray-500"}`}>Acordes ✏️</p>
-                                <p className={`text-[10px] font-bold truncate w-full text-center ${hasChords ? "text-[#8B6F47]" : "text-gray-500"}`}>
-                                  {display}
-                                </p>
-                              </div>
-                            );
-                          })()}
-
-                          {/* Info */}
-                          <div
-                            className="flex flex-col items-center justify-center px-1 py-0.5 bg-green-50 rounded-lg border border-green-400 text-center cursor-pointer hover:bg-green-500 transition-colors group/info"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setInfoSong(song); }}>
-                            <p className="text-[9px] leading-none text-green-600 group-hover/info:text-white">Info</p>
-                            <p className="text-[10px] font-bold text-green-700 group-hover/info:text-white">ℹ️</p>
-                          </div>
-
-                          {/* Apostila */}
-                          <div
-                            className="flex flex-col items-center justify-center px-1 py-0.5 bg-amber-50 rounded-lg border border-orange-400 text-center cursor-pointer hover:bg-orange-500 transition-colors group/ap"
-                            onClick={(e) => { e.stopPropagation(); setApostilaSong(song); }}>
-                            <p className="text-[9px] leading-none text-orange-600 group-hover/ap:text-white">Apostila</p>
-                            <p className="text-[10px] font-bold text-orange-700 group-hover/ap:text-white">📄</p>
-                          </div>
-
-                          {/* Tocar junto */}
-                          {(() => {
-                            const hasSoloTab = !!parseSoloTab(song.solo_tab);
-                            return (
-                              <div
-                                className={`flex flex-col items-center justify-center px-1 py-0.5 rounded-lg text-center transition-colors group/tj ${hasSoloTab ? "bg-indigo-50 border border-indigo-400 hover:bg-indigo-500 cursor-pointer" : "bg-gray-100 border border-gray-300 cursor-not-allowed"}`}
-                                title={hasSoloTab ? "🎸 Tocar junto — abre a tablatura do solo" : "Esta música ainda não possui tablatura de solo"}
-                                onClick={(e) => { e.stopPropagation(); if (hasSoloTab) { setSongInitialTab("tocarjunto"); setSelectedSong(song); } }}>
-                                <p className={`text-[9px] leading-none ${hasSoloTab ? "text-indigo-600 group-hover/tj:text-white" : "text-gray-500"}`}>Tocar</p>
-                                <p className={`text-[10px] font-bold ${hasSoloTab ? "text-indigo-700 group-hover/tj:text-white" : "text-gray-500"}`}>🎸</p>
-                              </div>
-                            );
-                          })()}
-                        </div>
-
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>);
-
-            })}
+          <div className="flex flex-col gap-2">
+            {filteredSongs.map((song) => (
+              <SongRow
+                key={song.id}
+                song={song}
+                tema="claro"
+                onOpen={setSelectedSong}
+                onStage={setStageSong}
+                onInfo={setInfoSong}
+                onApostila={setApostilaSong}
+                onEditChords={currentUser ? setEditChordsSong : undefined}
+                onTocarJunto={(s2) => { setSongInitialTab("tocarjunto"); setSelectedSong(s2); }}
+              />
+            ))}
           </div>
           }
 

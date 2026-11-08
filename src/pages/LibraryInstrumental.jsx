@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import LibraryHeader from "../components/songs/LibraryHeader";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -77,35 +78,22 @@ export default function LibraryInstrumental() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F1E8]">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#8B6F47] via-[#A68A64] to-[#D4AF37] shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-extrabold text-white">Biblioteca Instrumental</h1>
-                <p className="text-sm text-white/80">Partituras em formato PDF</p>
-              </div>
-            </div>
-            {isAdmin && (
-              <Button
-                onClick={openNewForm}
-                className="bg-white text-[#8B6F47] hover:bg-amber-50 font-bold"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Adicionar Partitura
-              </Button>
-            )}
-          </div>
+    <div className="min-h-screen bg-[#FBF6EA]">
+      <div className="max-w-7xl mx-auto px-4 pt-4 md:px-8 md:pt-8">
+        <LibraryHeader atual="instrumental" tema="claro" logado={false} />
+        <div className="flex items-center justify-between gap-3 -mt-1">
+          <p className="text-sm text-[#7A6A55]">Partituras em PDF</p>
+          {isAdmin && (
+            <Button onClick={openNewForm} className="h-9 bg-[#6B4F2E] hover:bg-[#5A4226] text-[#FFFDF8] font-semibold rounded-xl">
+              <Upload className="w-4 h-4 mr-1.5" />
+              Adicionar partitura
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Toolbar */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-4 md:px-8">
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />

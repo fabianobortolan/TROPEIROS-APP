@@ -17,7 +17,8 @@ import StageModeView from "../components/songs/StageModeView";
 import CadernosManager from "../components/cadernos/CadernosManager";
 import SongInfoModal from "../components/songs/SongInfoModal";
 import LibraryApostila from "../components/songs/LibraryApostila";
-import LibrarySongCard from "../components/songs/LibrarySongCard";
+import SongRow from "../components/songs/SongRow";
+import LibraryHeader from "../components/songs/LibraryHeader";
 
 // Estilos que pertencem a esta biblioteca
 const SAMBA_MPB_GENRES = ["mpb", "samba", "forro"];
@@ -158,66 +159,16 @@ export default function LibrarySambaMPB() {
     >
       <div className="w-full">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-4 md:mb-8">
-          <div className="flex flex-col gap-2 md:gap-4 mb-4 md:mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <div className="flex items-center gap-2">
-                  <Waves className="w-8 h-8 text-blue-400" />
-                  <h1
-                    className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text"
-                    style={{ backgroundImage: BLUE.text }}
-                  >
-                    Biblioteca Samba, MPB & Forró
-                  </h1>
-                </div>
-                <Badge className="text-white text-sm px-3 py-1" style={{ background: BLUE.main }}>
-                  {songs.length} {songs.length === 1 ? "música" : "músicas"}
-                </Badge>
-              </div>
-              <p className="text-blue-300/70 text-xs md:text-sm hidden md:block">
-                Samba, MPB e canções brasileiras — análise harmônica completa
-              </p>
-            </div>
-
-            <div className="flex gap-2 w-full">
-              {currentUser?.role === "admin" && (
-                <Link to={createPageUrl("Analyze")} className="flex-1">
-                  <button
-                    className="h-10 w-full text-xs md:text-sm font-bold rounded-xl flex items-center justify-center gap-1 text-white shadow-lg transition-all"
-                    style={{ background: BLUE.main }}
-                  >
-                    <Upload className="w-4 h-4 flex-shrink-0" />
-                    <span>Adicionar</span>
-                  </button>
-                </Link>
-              )}
-              {/* Ferramentas só para quem entrou no app (visitante vê só a lista de músicas) */}
-              {currentUser && (<>
-              <button
-                onClick={() => setShowLibraryApostila(true)}
-                className="flex-1 h-10 text-xs md:text-sm font-bold rounded-xl flex items-center justify-center gap-1 text-white shadow-lg transition-all"
-                style={{ background: "linear-gradient(90deg, #1d4ed8, #3b82f6)" }}
-              >
-                <BookMarked className="w-4 h-4 flex-shrink-0" />
-                <span>Apostila</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("biblioteca")}
-                className={`flex-1 h-10 rounded-xl text-xs md:text-sm font-bold transition-all ${activeTab === "biblioteca" ? "text-white shadow" : "bg-white/10 text-blue-300 hover:text-white"}`}
-                style={activeTab === "biblioteca" ? { background: BLUE.main } : {}}
-              >
-                Minhas Músicas
-              </button>
-              <button
-                onClick={() => setActiveTab("cadernos")}
-                className={`flex-1 h-10 rounded-xl text-xs md:text-sm font-bold transition-all ${activeTab === "cadernos" ? "text-white shadow" : "bg-white/10 text-blue-300 hover:text-white"}`}
-                style={activeTab === "cadernos" ? { background: BLUE.main } : {}}
-              >
-                Cadernos
-              </button>
-              </>)}
-            </div>
-          </div>
+          <LibraryHeader
+            atual="samba"
+            contagem={songs.length}
+            tema="azul"
+            logado={!!currentUser}
+            isAdmin={currentUser?.role === 'admin'}
+            onApostila={() => setShowLibraryApostila(true)}
+            abas={{ atual: activeTab === 'cadernos' ? 'cadernos' : 'biblioteca', mudar: setActiveTab }}
+            ferramentas={[]}
+          />
         </motion.div>
 
         {activeTab === "cadernos" ? (
@@ -363,7 +314,7 @@ export default function LibrarySambaMPB() {
                 </Link>
               </motion.div>
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-2">
                 {groupedSongs.map((row, index) => {
                   if (row.type === "header") {
                     return (
@@ -379,26 +330,16 @@ export default function LibrarySambaMPB() {
                     );
                   }
                   return (
-                    <motion.div
+                    <SongRow
                       key={row.song.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                    >
-                      <LibrarySongCard
-                        song={row.song}
-                        index={index}
-                        theme="blue"
-                        onOpenSong={(song) => setSelectedSong(song)}
-                        onStage={(song) => setStageSong(song)}
-                        onInfo={(song) => setInfoSong(song)}
-                        onApostila={(song) => setApostilaSong(song)}
-                        onTocarJunto={(song) => {
-                          setSongInitialTab("tocarjunto");
-                          setSelectedSong(song);
-                        }}
-                      />
-                    </motion.div>
+                      song={row.song}
+                      tema="azul"
+                      onOpen={setSelectedSong}
+                      onStage={setStageSong}
+                      onInfo={setInfoSong}
+                      onApostila={setApostilaSong}
+                      onTocarJunto={(s2) => { setSongInitialTab("tocarjunto"); setSelectedSong(s2); }}
+                    />
                   );
                 })}
               </div>
