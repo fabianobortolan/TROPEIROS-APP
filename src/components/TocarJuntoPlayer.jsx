@@ -109,7 +109,10 @@ function mountTocarJunto(root, SONG) {
   const $ = r => root.querySelector(`[data-r="${r}"]`);
   const SVGNS = 'http://www.w3.org/2000/svg';
   const TICK = 0.25;
-  const X0 = 64, PAD = 16, H = 206, STAFF_TOP = 64, STAFF_BOT = 144;
+  // nº de cordas = maior par/corda da afinação (viola 5, violão 6)
+  const NSTR = Math.max(5, ...Object.keys(SONG.tuning || {}).map(Number).filter(n => n > 0));
+  const INSTR = SONG.instrument === 'violao' || SONG.instrument === 'viola' ? SONG.instrument : (NSTR >= 6 ? 'violao' : 'viola');
+  const X0 = 64, PAD = 16, STAFF_TOP = 64, STAFF_BOT = STAFF_TOP + (NSTR - 1) * 20, H = STAFF_BOT + 62;
   const LINE_Y = s => 64 + (s - 1) * 20;
   const BPB = SONG.beatsPerBar, NB = SONG.measures.length, TOTAL = NB * BPB;
 
@@ -132,10 +135,10 @@ function mountTocarJunto(root, SONG) {
   function buildSVG() {
     const p = [];
     p.push(`<rect class="loopband" data-loopband="1" x="0" y="20" width="0" height="${H - 24}" style="display:none"/>`);
-    for (let s = 1; s <= 5; s++) { const y = LINE_Y(s); p.push(`<line class="staff" x1="${X0 - 50}" y1="${y}" x2="${barX(NB)}" y2="${y}"/>`); }
-    p.push(`<text class="tablabel" x="${X0 - 50}" y="${LINE_Y(1) + 14}">T</text><text class="tablabel" x="${X0 - 50}" y="${LINE_Y(3) + 5}">A</text><text class="tablabel" x="${X0 - 50}" y="${LINE_Y(4) + 16}">B</text>`);
+    for (let s = 1; s <= NSTR; s++) { const y = LINE_Y(s); p.push(`<line class="staff" x1="${X0 - 50}" y1="${y}" x2="${barX(NB)}" y2="${y}"/>`); }
+    p.push(`<text class="tablabel" x="${X0 - 50}" y="${LINE_Y(1) + 14}">T</text><text class="tablabel" x="${X0 - 50}" y="${(STAFF_TOP + STAFF_BOT) / 2 + 5}">A</text><text class="tablabel" x="${X0 - 50}" y="${STAFF_BOT - 4}">B</text>`);
     const [tn, td] = SONG.time.split('/');
-    p.push(`<text class="tsig" x="${X0 - 28}" y="${LINE_Y(2) + 8}">${tn}</text><text class="tsig" x="${X0 - 28}" y="${LINE_Y(4) + 8}">${td}</text>`);
+    p.push(`<text class="tsig" x="${X0 - 28}" y="${(STAFF_TOP * 3 + STAFF_BOT) / 4 + 8}">${tn}</text><text class="tsig" x="${X0 - 28}" y="${(STAFF_TOP + STAFF_BOT * 3) / 4 + 8}">${td}</text>`);
     for (let m = 0; m <= NB; m++) {
       const x = barX(m);
       p.push(`<line class="bar${m === NB ? ' end' : ''}" x1="${x}" y1="${STAFF_TOP}" x2="${x}" y2="${STAFF_BOT}"/>`);
@@ -181,14 +184,19 @@ function mountTocarJunto(root, SONG) {
   }
   const INNER = buildSVG();
   const viewport = $('viewport');
+  viewport.style.height = `${STAFF_BOT + 8}px`;
   const svgMain = document.createElementNS(SVGNS, 'svg');
   svgMain.setAttribute('class', 'tj-main');
   svgMain.setAttribute('width', W); svgMain.setAttribute('height', H); svgMain.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svgMain.innerHTML = INNER; viewport.appendChild(svgMain);
 
-  const t = SONG.tuning, tk = [t['5'], t['4'], t['3'], t['2'], t['1']].join(',');
-  const tuningName = ({ '47,52,56,59,64': 'Cebolão Mi', '45,50,54,57,62': 'Cebolão Ré', '46,51,55,58,63': 'Cebolão Ré#', '43,50,55,59,62': 'Rio Abaixo' })[tk] || 'afinação própria';
-  $('chips').innerHTML = [`Viola em <b>${tuningName}</b>`, `Compasso <b>${SONG.time}</b>`, `<b>${SONG.bpm}</b> BPM`, `<b>${NB}</b> compassos`].map(s => `<span class="chip">${s}</span>`).join('');
+  const t = SONG.tuning, tk = Array.from({ length: NSTR }, (_, k) => t[String(NSTR - k)]).join(',');
+  const tuningName = ({
+    '47,52,56,59,64': 'Cebolão Mi', '45,50,54,57,62': 'Cebolão Ré', '46,51,55,58,63': 'Cebolão Ré#', '43,50,55,59,62': 'Rio Abaixo',
+    '40,45,50,55,59,64': 'afinação padrão', '38,45,50,55,59,64': 'Drop D (Ré)', '39,44,49,54,58,63': 'meio tom abaixo', '38,43,48,53,57,62': 'um tom abaixo',
+  })[tk] || 'afinação própria';
+  const instrLabel = INSTR === 'violao' ? 'Violão' : 'Viola';
+  $('chips').innerHTML = [`${instrLabel} em <b>${tuningName}</b>`, `Compasso <b>${SONG.time}</b>`, `<b>${SONG.bpm}</b> BPM`, `<b>${NB}</b> compassos`].map(s => `<span class="chip">${s}</span>`).join('');
   $('mtotal').textContent = NB;
   $('seek').max = TOTAL;
 
@@ -283,7 +291,7 @@ function mountTocarJunto(root, SONG) {
     const base = SONG.tuning[String(n.s)] + n.f;
     const vol = n.grace ? 0.7 : 1;
     const layers = [[base, 1, 0.30 * vol], [base, 1.0025, 0.19 * vol]];
-    if ((SONG.octavePairs || []).includes(n.s)) layers.push([base + 12, 1, 0.14 * vol]);
+    if (INSTR === 'viola' && (SONG.octavePairs || []).includes(n.s)) layers.push([base + 12, 1, 0.14 * vol]);
     if (lastOnString[n.s]) lastOnString[n.s].forEach(v => { try { v.g.gain.setTargetAtTime(0, at, 0.02); v.src.stop(at + 0.25); } catch (e) {} });
     const group = [];
     layers.forEach(([m, rate, v]) => {

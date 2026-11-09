@@ -30,7 +30,7 @@ import CifraAlertBadge from "./CifraAlertBadge";
 import AuditPanel from "./AuditPanel";
 import TocarJuntoPlayer from "@/components/TocarJuntoPlayer";
 import GpImporter from "@/components/GpImporter";
-import { parseSoloTab } from "@/lib/soloTabUtils";
+import { parseSoloTab, tabInstrument, tabStrings } from "@/lib/soloTabUtils";
 import PalcoView from "@/components/palco/PalcoView";
 import { tituloLegivel } from "./SongRow";
 import { ChevronLeft, MoreVertical, MonitorPlay } from "lucide-react";
@@ -1102,6 +1102,39 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
                     }}
                   />
                 )}
+                {hasSoloTab && currentUser?.role === 'admin' && (() => {
+                  const tab = parseSoloTab(song.solo_tab);
+                  const atual = tabInstrument(tab);
+                  const nCordas = tabStrings(tab);
+                  const salvar = async (instrument) => {
+                    if (instrument === atual) return;
+                    const novo = { ...song.solo_tab, instrument };
+                    setSong(prev => ({ ...prev, solo_tab: novo }));
+                    try {
+                      await base44.entities.Song.update(song.id, { solo_tab: novo });
+                      queryClient.invalidateQueries({ queryKey: ['songs'] });
+                    } catch (e) {
+                      setSong(prev => ({ ...prev, solo_tab: song.solo_tab }));
+                      alert('Não foi possível salvar o instrumento: ' + (e?.message || e));
+                    }
+                  };
+                  return (
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="text-[#6E6457]">Instrumento:</span>
+                      {[['viola', 'Viola caipira'], ['violao', 'Violão']].map(([v, label]) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => salvar(v)}
+                          className={`px-3 py-1 rounded-full border text-sm font-semibold ${atual === v ? 'bg-[#8B6F47] border-[#8B6F47] text-white' : 'border-[#D9D2C6] text-[#211B14] hover:border-[#8B6F47]'}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                      <span className="text-xs text-[#6E6457]">tablatura com {nCordas} cordas{tab.instrument ? '' : ' (reconhecido automaticamente)'}</span>
+                    </div>
+                  );
+                })()}
                 {hasSoloTab && <TocarJuntoPlayer soloTab={parseSoloTab(song.solo_tab)} />}
 
                 {/* Solo Upload */}

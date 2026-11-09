@@ -19,5 +19,16 @@ export function parseSoloTab(raw) {
     tuning,
     octavePairs,
     measures,
+    // 'viola' | 'violao'; se não informado, o player decide pelo nº de cordas (6 = violão)
+    ...(raw.instrument === "viola" || raw.instrument === "violao" ? { instrument: raw.instrument } : {}),
   };
+}
+// Nº de cordas da tablatura (pela afinação) e instrumento efetivo.
+export function tabStrings(tab) {
+  const ks = Object.keys(tab?.tuning || {}).map(Number).filter((n) => n > 0);
+  return ks.length ? Math.max(...ks) : 5;
+}
+export function tabInstrument(tab) {
+  if (tab?.instrument === "viola" || tab?.instrument === "violao") return tab.instrument;
+  return tabStrings(tab) >= 6 ? "violao" : "viola";
 }

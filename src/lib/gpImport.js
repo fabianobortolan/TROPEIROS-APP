@@ -262,6 +262,7 @@ export function convertGpif(root) {
   const [ftn, ftd] = firstTime.split('/').map(Number);
   const tab = {
     format: 'tropeiros-tab-v1', bpm, time: firstTime, beatsPerBar: num(new Fr(ftn * 4, ftd)),
+    instrument: nstr >= 6 ? 'violao' : 'viola',
     tuning, octavePairs: nstr === 5 ? [3, 4, 5].filter(p => String(p) in tuning) : [],
     measures: out.map(m => ({ notes: m.notes, chords: m.chords })),
   };
@@ -275,7 +276,8 @@ export function convertGpif(root) {
     muted: techs.Muted || 0, techniques: techs, warnings: warn,
   };
   if (tempoChanges.length) warn.push(`mudança de andamento no meio da música (${tempoChanges.map(t => `${t.bpm} BPM no compasso ${t.bar + 1}`).join(', ')}); o Tocar Junto usa o andamento inicial (${bpm} BPM)`);
-  if (nstr !== 5 || pitches.join(' ') !== '47 52 56 59 64') warn.push(`afinação diferente do Cebolão Mi: ${pitches.join(' ')}`);
+  if (nstr >= 6) { if (pitches.join(' ') !== '40 45 50 55 59 64') warn.push(`violão com afinação diferente da padrão: ${pitches.join(' ')}`); }
+  else if (pitches.join(' ') !== '47 52 56 59 64') warn.push(`afinação diferente do Cebolão Mi: ${pitches.join(' ')}`);
   if (report.chords === 0) warn.push('arquivo sem cifras (o Tocar Junto mostrará só a tablatura)');
   if (report.muted) warn.push(`${report.muted} notas abafadas serão tocadas como notas normais`);
   return { tab, report };
