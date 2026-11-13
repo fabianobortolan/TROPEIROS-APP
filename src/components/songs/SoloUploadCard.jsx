@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Guitar, FileText, Upload, Loader2, Trash2, ExternalLink, AlertCircle, Image } from "lucide-react";
 
-export default function SoloUploadCard({ song, soloFileInputRef, uploadingSolo, soloError, onUpload, onRemove }) {
+export default function SoloUploadCard({ song, soloFileInputRef, uploadingSolo, soloError, onUpload, onRemove, podeEditar = true }) {
   const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(song.solo_pdf_url || "");
 
   return (
@@ -45,7 +45,7 @@ export default function SoloUploadCard({ song, soloFileInputRef, uploadingSolo, 
               </div>
             )}
 
-            <div className="flex gap-3">
+            {podeEditar && <div className="flex gap-3">
               <Button onClick={() => soloFileInputRef.current?.click()} variant="outline"
                 className="flex-1 border-[#8B6F47] text-[#8B6F47] hover:bg-[#8B6F47] hover:text-white" disabled={uploadingSolo}>
                 {uploadingSolo ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</> : <><Upload className="w-4 h-4 mr-2" />Substituir</>}
@@ -54,7 +54,7 @@ export default function SoloUploadCard({ song, soloFileInputRef, uploadingSolo, 
                 className="flex-1 border-red-500 text-red-600 hover:bg-red-50" disabled={uploadingSolo}>
                 <Trash2 className="w-4 h-4 mr-2" />Remover Solo
               </Button>
-            </div>
+            </div>}
 
             <input ref={soloFileInputRef} type="file"
               accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*"

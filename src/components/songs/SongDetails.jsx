@@ -677,6 +677,7 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={() => setIsEditing(true)}><Edit className="w-4 h-4 mr-2" />Editar música</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setActiveTab('tocarjunto'); setTimeout(() => { document.getElementById('cartao-solo')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); soloFileInputRef.current?.click(); }, 300); }}><Upload className="w-4 h-4 mr-2" />{song.solo_pdf_url ? 'Trocar solo (PNG/PDF)' : 'Anexar solo (PNG/PDF)'}</DropdownMenuItem>
                     <DropdownMenuItem onClick={handleDeleteSong} disabled={deleteSongMutation.isPending} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Excluir música</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -1137,15 +1138,16 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
                 })()}
                 {hasSoloTab && <TocarJuntoPlayer soloTab={parseSoloTab(song.solo_tab)} />}
 
-                {/* Solo Upload */}
-                <SoloUploadCard
+                {/* Solo em imagem/PDF: administrador envia; os demais só veem o que foi anexado */}
+                {(isAdmin || song.solo_pdf_url) && <div id="cartao-solo"><SoloUploadCard
+                  podeEditar={isAdmin}
                   song={song}
                   soloFileInputRef={soloFileInputRef}
                   uploadingSolo={uploadingSolo}
                   soloError={soloError}
                   onUpload={handleSoloFileSelect}
                   onRemove={handleRemoveSolo}
-                />
+                /></div>}
 
                 {/* Playback */}
                 {song.playback_url && (
