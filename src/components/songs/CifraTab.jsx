@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Edit, Save, X, FileText, Loader2, Printer, Download, MessageCircle, CaseUpper, ArrowUpDown, MoreVertical, Wand2 } from "lucide-react";
+import { Edit, Save, X, FileText, Loader2, Printer, Download, MessageCircle, CaseUpper, ArrowUpDown, MoreVertical, Wand2, Lightbulb } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ClickableChordsCifra from "./ClickableChordsCifra";
 import TranspositorCifra from "./TranspositorCifra";
 import CifraWithComments from "./CifraWithComments";
 import { uppercaseSelection } from "@/utils/textCaseUtils";
 import { simplificarCifra, temOQueSimplificar, NIVEIS_SIMPLIFICACAO, lerNivelSimplificacao, gravarNivelSimplificacao } from "@/utils/simplificarAcordes";
+import { lerInstrumento, gravarInstrumento } from "@/lib/acordesInstrumento";
+import AcordesDaMusica from "./AcordesDaMusica";
+import DicaMusica from "./DicaMusica";
 
 export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveComments, isAdmin = false, highlightLine = null }) {
   const [mostrarTom, setMostrarTom] = React.useState(false);
@@ -20,6 +23,9 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
   const [nivel, setNivel] = useState(lerNivelSimplificacao);
   const [mostrarSimplificar, setMostrarSimplificar] = useState(false);
   const mudarNivel = (v) => { setNivel(v); gravarNivelSimplificacao(v); };
+  const [mostrarDica, setMostrarDica] = useState(false);
+  const [instrumento, setInstrumento] = useState(lerInstrumento);
+  const mudarInstrumento = (v) => { setInstrumento(v); gravarInstrumento(v); };
   // Controla se o displayText foi modificado localmente (após um save)
   const locallyModified = useRef(false);
   const textareaRef = useRef(null);
@@ -143,7 +149,7 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
     <div className="space-y-3">
       {/* Barra da cifra */}
       {!isEditing ? (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {viewText && (
             <button
               type="button"
@@ -162,6 +168,16 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
               className={`h-10 px-3 rounded-xl border text-sm font-semibold flex items-center gap-1.5 ${nivel ? "bg-[#6B8E4E] text-white border-[#6B8E4E]" : mostrarSimplificar ? "bg-[#6B4F2E] text-[#FFFDF8] border-[#6B4F2E]" : "bg-[#FFFDF8] text-[#6B4F2E] border-[#E6DCC8]"}`}
             >
               <Wand2 className="w-4 h-4" /> {nivel ? nomeNivel : "Simplificar"}
+            </button>
+          )}
+          {viewText && (
+            <button
+              type="button"
+              onClick={() => setMostrarDica((v) => !v)}
+              aria-expanded={mostrarDica}
+              className={`h-10 px-3 rounded-xl border text-sm font-semibold flex items-center gap-1.5 ${mostrarDica ? "bg-[#6B4F2E] text-[#FFFDF8] border-[#6B4F2E]" : "bg-[#FFF3DC] text-[#8A5A1E] border-[#E8C98F]"}`}
+            >
+              <Lightbulb className="w-4 h-4" /> Dica
             </button>
           )}
           <div className="flex-1" />
@@ -240,6 +256,19 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
         </div>
       )}
 
+      {/* Dica automática (pestana, capotraste, enfeites) para o instrumento escolhido */}
+      {!isEditing && viewText && mostrarDica && (
+        <DicaMusica
+          texto={viewText}
+          textoOriginal={textoBase}
+          tom={song.main_key || song.original_key}
+          instrumento={instrumento}
+          onInstrumento={mudarInstrumento}
+          onAbrirSimplificar={() => setMostrarSimplificar(true)}
+          onAbrirTom={() => setMostrarTom(true)}
+        />
+      )}
+
       {/* Transpositor (aberto pelo botão "Mudar tom"; salvar o tom é só do administrador) */}
       {!isEditing && viewText && mostrarTom && (
         <TranspositorCifra
@@ -303,7 +332,14 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
             <ClickableChordsCifra cifraText={viewText} highlightLine={highlightLine} />
           )}
         </div>
-      ) : (
+      ) : null}
+
+      {/* Acordes desta música, desenhados na viola ou no violão */}
+      {!isEditing && viewText ? (
+        <AcordesDaMusica texto={viewText} instrumento={instrumento} onInstrumento={mudarInstrumento} />
+      ) : null}
+
+      {isEditing || viewText ? null : (
         <div className="text-center py-12 text-[#A68A64]">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
           <p className="mb-3">Nenhuma cifra cadastrada para esta música.</p>
