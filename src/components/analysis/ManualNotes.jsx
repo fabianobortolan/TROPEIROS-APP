@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Save, Plus, Trash2, FileText, Clock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import HarmonicAnalysisCard from "./HarmonicAnalysisCard";
+import AnaliseHarmonicaTexto from "./AnaliseHarmonicaTexto";
 
 export default function ManualNotes({ song }) {
   const queryClient = useQueryClient();
@@ -69,7 +70,10 @@ export default function ManualNotes({ song }) {
 
   return (
     <div className="space-y-6">
-      {/* Análise Harmônica */}
+      {/* Análise harmônica escrita (texto completo da música) */}
+      <AnaliseHarmonicaTexto texto={song.general_notes} />
+
+      {/* Ficha técnica */}
       <HarmonicAnalysisCard song={song} />
 
       {/* Anotações por Seção */}

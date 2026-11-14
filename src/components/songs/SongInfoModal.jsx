@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Music2, Music4, Clock, Guitar, User, Calendar, FileText, Zap, Tag, BookOpen, AlertTriangle, ShieldCheck } from "lucide-react";
 import CifraAlertBadge from "./CifraAlertBadge";
+import AnaliseHarmonicaTexto from "../analysis/AnaliseHarmonicaTexto";
 
 const genreLabels = {
   sertanejo_raiz: "Sertanejo Raiz",
@@ -88,9 +89,9 @@ export default function SongInfoModal({ song, open, onClose }) {
               <div className="flex items-start gap-3 py-2">
                 <BookOpen className="w-4 h-4 text-[#8B6F47] mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-[#A68A64] font-medium uppercase tracking-wide mb-2">Observações Gerais</p>
-                  <div className="bg-[#F5F1E8] rounded-lg p-3 text-sm text-[#5C3D20] leading-relaxed whitespace-pre-wrap border border-[#D4C5B0]/50">
-                    {song.general_notes}
+                  <p className="text-xs text-[#A68A64] font-medium uppercase tracking-wide mb-2">Análise harmônica</p>
+                  <div className="bg-[#F5F1E8] rounded-lg p-3 border border-[#D4C5B0]/50">
+                    <AnaliseHarmonicaTexto texto={song.general_notes} compacto />
                   </div>
                 </div>
               </div>
