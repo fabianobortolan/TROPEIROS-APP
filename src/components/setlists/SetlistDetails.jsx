@@ -831,20 +831,20 @@ Tropeiros do Bebedouro
                           <p className="text-sm text-[#A68A64]">{song.artist}</p>
                           <div className="flex flex-wrap gap-3 mt-2 text-xs">
                             {song.main_key && (
-                              <span className="text-[#9CAF88]">Tom: ${song.main_key}</span>
+                              <span className="text-[#9CAF88]">Tom: {song.main_key}</span>
                             )}
                             {song.rhythm_name && (
                                 <span className="bg-gradient-to-r from-[#D4AF37] to-[#9CAF88] text-white px-2 py-1 rounded-md font-bold">
-                                🎵 ${song.rhythm_name}
+                                🎵 {song.rhythm_name}
                                 </span>
                             )}
                             {song.progressions && song.progressions.length > 0 ? (
-                                <span className="text-[#D4AF37]">${song.progressions.length} progressões</span>
+                                <span className="text-[#D4AF37]">{song.progressions.length} progressões</span>
                             ) : song.tempo && (
-                                <span className="text-[#D4AF37]">${song.tempo} BPM</span>
+                                <span className="text-[#D4AF37]">{song.tempo} BPM</span>
                             )}
                             {song.duration && (
-                              <span className="text-[#A68A64]">${song.duration}</span>
+                              <span className="text-[#A68A64]">{song.duration}</span>
                             )}
                           </div>
                         </div>

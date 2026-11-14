@@ -1,3 +1,4 @@
+import { acordeNoFormatoCadastro } from "@/lib/acordesInstrumento";
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -165,7 +166,7 @@ Retorne apenas o texto da tablatura, sem explicações.`,
     }
     return allChords.find(c => c.name === chordName && c.instrument === instrument)
       || allChords.find(c => c.name?.toLowerCase() === nameLower && c.instrument === instrument)
-      || null;
+      || acordeNoFormatoCadastro(chordName, instrument);
   };
 
   const instrLabel = instrument === "viola" ? "Viola Caipira" : "Violão";

@@ -1,3 +1,4 @@
+import { acordeNoFormatoCadastro } from "@/lib/acordesInstrumento";
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -258,7 +259,7 @@ Música: ${song.title} - ${song.artist}`,
     // 2. Qualquer diagrama do banco para o instrumento
     return allChords.find(c => c.name === chordName && c.instrument === instrument)
       || allChords.find(c => c.name?.toLowerCase() === nameLower && c.instrument === instrument)
-      || null;
+      || acordeNoFormatoCadastro(chordName, instrument);
   };
 
   // Apenas acordes QUE TÊM diagrama

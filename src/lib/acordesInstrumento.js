@@ -320,3 +320,18 @@ export function dicaDaMusica(texto, instId = "viola", { useFlats = false } = {})
 const CHAVE_INST = "cifra:instrumento";
 export const lerInstrumento = () => { try { const v = localStorage.getItem(CHAVE_INST); return INSTRUMENTOS[v] ? v : "viola"; } catch { return "viola"; } };
 export const gravarInstrumento = (v) => { try { localStorage.setItem(CHAVE_INST, v); } catch { /* sem espaço */ } };
+
+// Desenho no formato dos acordes cadastrados (tabela chord), para as apostilas em PDF.
+// Viola: 10 cordas (pares); violão: 6. Usado quando o acorde não tem desenho cadastrado.
+export function acordeNoFormatoCadastro(nome, instrument) {
+  const d = desenhosDoAcorde(nome, instrument === "viola" ? "viola" : "violao")[0];
+  if (!d) return null;
+  const casas = d.trastes.map((f) => (f === null ? "x" : String(f)));
+  return {
+    name: nome,
+    instrument,
+    strings: instrument === "viola" ? casas.flatMap((c) => [c, c]) : casas,
+    fret: d.casaMax <= 5 ? 0 : d.casaBase - 1,
+    barre_fret: d.pestana ? d.pestana.casa : null,
+  };
+}
