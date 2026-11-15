@@ -938,6 +938,10 @@ Retorne TODAS as seções encontradas com seus acordes e padrão em graus romano
                   await updateSongMutation.mutateAsync({ cifra_comments: updatedComments });
                   setSong(prev => ({ ...prev, cifra_comments: updatedComments }));
                 }}
+                onSaveDica={async (dica) => {
+                  await updateSongMutation.mutateAsync({ dica_pratica: dica });
+                  setSong(prev => ({ ...prev, dica_pratica: dica }));
+                }}
                 onSaveCifra={async (newText, newKey) => {
                   const payload = { cifra_text: newText };
                   if (newKey) payload.main_key = newKey;

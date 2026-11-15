@@ -12,7 +12,7 @@ import { lerInstrumento, gravarInstrumento } from "@/lib/acordesInstrumento";
 import AcordesDaMusica from "./AcordesDaMusica";
 import DicaMusica from "./DicaMusica";
 
-export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveComments, isAdmin = false, highlightLine = null }) {
+export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveComments, onSaveDica, isAdmin = false, highlightLine = null }) {
   const [mostrarTom, setMostrarTom] = React.useState(false);
   // onSaveCifra recebe (newText) ou (newText, newKey) se vindo do transpositor
   const [isEditing, setIsEditing] = useState(false);
@@ -266,6 +266,9 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
           onInstrumento={mudarInstrumento}
           onAbrirSimplificar={() => setMostrarSimplificar(true)}
           onAbrirTom={() => setMostrarTom(true)}
+          dicaPratica={song.dica_pratica || ""}
+          isAdmin={isAdmin}
+          onSalvarDica={onSaveDica}
         />
       )}
 
