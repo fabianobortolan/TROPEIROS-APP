@@ -267,6 +267,7 @@ export default function CifraTab({ song, transposedCifra, onSaveCifra, onSaveCom
           onAbrirSimplificar={() => setMostrarSimplificar(true)}
           onAbrirTom={() => setMostrarTom(true)}
           dicaPratica={song.dica_pratica || ""}
+          dicaAutoOculta={!!song.dica_auto_oculta}
           isAdmin={isAdmin}
           onSalvarDica={onSaveDica}
         />
